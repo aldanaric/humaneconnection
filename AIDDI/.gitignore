@@ -51,5 +51,4 @@ venv.bak/
 *.temp
 
 # Project-specific exclusions
-data/
 testing/
