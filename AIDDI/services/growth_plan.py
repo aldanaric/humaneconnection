@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -6,8 +7,25 @@ INPUT_DIR = GROWTH_PLAN_DIR / "Inputs"
 OUTPUT_DIR = GROWTH_PLAN_DIR / "Outputs"
 PROMPT_FILE = GROWTH_PLAN_DIR / "growth_plan_system_prompt.md"
 
+def create_person_folder(folder_name: str):
+    """Create a Last_First folder under INPUT_DIR"""
+    folder_name = folder_name.strip().replace(",","_")
+    folder_name = re.sub(r"\s+", "", folder_name)
 
-def _split_last_first(folder_name: str) -> Tuple[str, str]:
+    if not re.fullmatch(r"[A-Za-z]+_[A-Za-z]+", folder_name):
+        raise ValueError("Folder name must be in the format Last_First.")
+
+    folder = INPUT_DIR / folder_name
+    existed = folder.exists()
+    folder.mkdir(parents=True, exist_ok=True)
+
+    return folder, existed
+
+def save_uploaded_file(uploaded_file, destination):
+    if uploaded_file is not None:
+        destination.write_bytes(uploaded_file.getbuffer())
+
+def split_last_first(folder_name: str) -> Tuple[str, str]:
     """Return (last, first) from a Last_First folder name."""
     parts = folder_name.split("_", 1)
     if len(parts) != 2 or not parts[0] or not parts[1]:
@@ -42,7 +60,7 @@ def _first_existing(label: str, candidates: List[Path]) -> Path:
 
 def expected_input_files(folder_name: str) -> Dict[str, Path]:
     """Build expected input paths for the selected Last_First folder."""
-    last, first = _split_last_first(folder_name)
+    last, first = split_last_first(folder_name)
     folder = INPUT_DIR / folder_name
 
     # Canonical name is first. Backward-compatible variants cover the typo
@@ -84,7 +102,7 @@ def load_system_prompt() -> str:
 
 def build_user_prompt(folder_name: str) -> str:
     """Combine selected person inputs into the user prompt sent to the model."""
-    last, first = _split_last_first(folder_name)
+    last, first = split_last_first(folder_name)
     inputs = read_required_inputs(folder_name)
 
     return f"""
