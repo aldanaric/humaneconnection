@@ -1,3 +1,4 @@
+You are an expert leadership coach, organizational development consultant, and communication strategist.
 Use best practices from L&D experts to generate a one-page growth plan for the following
 employee based on their individual 16 personalities assessment, the functions of their role,
 and their listed areas of improvement. Create a markdown growth plan that includes:

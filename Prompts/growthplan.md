@@ -3,29 +3,38 @@ Takeaways from discussion with Natasha about format/expectations for growth plan
 # 30-day Growth Plan
 
 **Employee:**[employee name]
+
 **Role:**[employee job title]
+
 **Type:**[employee personality type]
+
 **Core Functions:**[summary of employee job functions]
 
 ## 1. Purpose and Framework
 Identify 3 core areas this plan will focus on for employee growth in a sentence or two. Then include
 the following:
+
 It makes use of the three concepts of:
-- **Humane Connection$^TM$**:Presence, Empathy, Clarity, Adaptability, Recognition of
-Humanity.
+- **Humane Connection&trade;**:Presence, Empathy, Clarity, Adaptability, Recognition of
+Humanity
 - **Owning Your Work**:Define, Choose, Zoom Out, Submit, Absorb, Teach.
 - **Behavior-Change science**:[2 concepts and their owners relevant to the employee]
 
 ## 2. Development Priorities
 For each included area of improvement identify a development priority with the following pieces:
+
 **Behavioral goal:** [single sentence goal]
+
 **Humane Connection Link:** [brief connection to humane connection]
+
 **Method:** [brief summary of method to achieve goal grounded in cited behavior change science]
 If there is an old habit that needs to be moved away from:
+
 **Behavior-Change Design:**
 - Cue: 
 - Routine:
 - Reward:
+
 **Supervisor Role:** [how the supervisor can support this]
 
 ## 3. 30-Day Implementation Timeline
@@ -49,7 +58,7 @@ A bulleted list with a specific observable success indicator for each developmen
 ## Conclusion
 2 or 3 sentences summarizing how this plan will help the employee make the desired growth.
 Then include the following: 
-### How Performance Thrives Through Humane ConnectionTM
+### How Performance Thrives Through Humane Connection&trade;
 - Presence builds psychological safety When managers listen actively and
 respond thoughtfully, employees feel seen and heard. This reduces fear-
 based shutdowns and encourages real-time inquiry, which improves task
