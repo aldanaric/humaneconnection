@@ -1,11 +1,11 @@
 import asyncio
-
 import streamlit as st
 
 from ui.components import sidebar
 from ui.interactions import chat_handler
 import services.growth_plan as growth_plan
-import services.llm
+# 1. NEW ARCHITECTURE: Import our central LLM factory
+from services.llm_factory import get_llm
 
 st.set_page_config(
     page_title="Growth Plan",
@@ -60,6 +60,8 @@ if submit:
     except ValueError as e:
         st.error(str(e))
 
+
+# --- SECTION 2: Profile Selection & Validation ---
 st.markdown(
     "Select a person folder from `data/GrowthPlan`. "
     "The folder must be named `Last_First` and contain the required markdown inputs."
@@ -72,7 +74,6 @@ if not person_folders:
     st.stop()
 
 selected_folder = st.selectbox("Select person", person_folders)
-
 is_valid, required_files, missing_files = growth_plan.validate_inputs(selected_folder)
 
 st.subheader("Required inputs")
@@ -82,6 +83,7 @@ for label, path in required_files.items():
     else:
         st.error(f"Missing {label}")
 
+# Provide manual text areas if files are missing
 manual_inputs = {}
 
 if "Job Functions" in missing_files:
@@ -120,11 +122,10 @@ if "Observations" in missing_files:
         st.session_state.observation_rows +=1
         st.rerun()
 
-create_button = st.button(
-    "Create Growth Plan",
-    type="primary"
-)
+create_button = st.button("Create Growth Plan", type="primary")
 
+
+# --- SECTION 3: Plan Generation ---
 if create_button:
     output_placeholder = st.empty()
 
@@ -177,6 +178,8 @@ if create_button:
         if not is_valid:
             st.error(f"Still missing: {', '.join(missing_files)}")
             st.stop()
+            
+        # Build the prompt array
         system_prompt = growth_plan.load_system_prompt()
         user_prompt = growth_plan.build_user_prompt(selected_folder)
         messages = [
@@ -184,15 +187,23 @@ if create_button:
             {"role": "user", "content": user_prompt},
         ]
 
-        with st.spinner("Creating growth plan..."):
-            _, response = asyncio.run(
-                chat_handler.run_conversation(
-                    messages,
-                    output_placeholder,
-                    max_tokens=4000,
-                )
-            )
+        # 2. NEW ARCHITECTURE: Fetch the active LLM provider
+        provider = get_llm()
 
+        # 3. NEW ARCHITECTURE: Define the async streaming block inline
+        async def generate_plan():
+            full_response = ""
+            async for chunk in provider.converse(messages, max_tokens=4000):
+                full_response += chunk
+                output_placeholder.markdown(full_response + "▌")
+            output_placeholder.markdown(full_response)
+            return full_response
+
+        # Execute the stream
+        with st.spinner("Creating growth plan..."):
+            response = asyncio.run(generate_plan())
+
+        # Save and Download outputs
         saved_path = growth_plan.save_growth_plan(selected_folder, response)
         st.success(f"Growth Plan saved to `{saved_path}`")
         st.download_button(
