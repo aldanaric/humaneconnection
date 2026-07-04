@@ -17,16 +17,25 @@ st.header("Growth Plan")
 
 sidebar.render_sidebar()
 
+if "observation_rows" not in st.session_state:
+    st.session_state.observation_rows = 1
+
 # --- SECTION 1: File Upload & Profile Creation ---
 with st.expander("➕ Add New Profile"):
     with st.form('input'):
         folder_name = st.text_input("Input the person name for these files (Last, First)")
-        personality = st.file_uploader("Personality Assessment", type="md")
-        job_functions = st.file_uploader("Job Functions", type="md")
-        observations = st.file_uploader("Observations", type="md")
+        personality = st.file_uploader(
+            "Personality Assessment",
+            type=["md", "pdf"])
+        job_functions = st.file_uploader(
+            "Job Functions",
+            type=["md", "pdf"])
+        observations = st.file_uploader(
+            "Observations",
+            type=["md", 'pdf'])
         submit = st.form_submit_button("Add/Update Profile files")
 
-# Handle standard file saving logic
+
 if submit:
     try:
         folder, existed = growth_plan.create_person_folder(folder_name)
@@ -76,16 +85,42 @@ for label, path in required_files.items():
 
 # Provide manual text areas if files are missing
 manual_inputs = {}
+
 if "Job Functions" in missing_files:
-    manual_inputs["Job Functions"] = st.text_area(
-        "Enter the employee's job title and job functions",
-        height=200
-    )
+    manual_inputs["Job Title"] = st.text_input("Job Title")
+    manual_inputs["Job Functions"] = st.text_area("Job functions",
+                                                  height=200
+                                                  )
 if "Observations" in missing_files:
-    manual_inputs["Observations"] = st.text_area(
-        "Enter your observations and the impacts",
-        height=250
-    )
+    manual_inputs["Observations"] = []
+    st.subheader("Areas for Improvement")
+
+    for i in range(st.session_state.observation_rows):
+        area = st.text_input(f"**Area {i + 1}**:")
+        col1, col2 = st.columns(2)
+        with col1:
+            observation = st.text_area(
+                "Observation",
+                key=f"observation_{i}",
+                height=100,
+            )
+        with col2:
+            impact = st.text_area(
+                "Impact",
+                key=f"impact_{i}",
+                height=100
+            )
+        manual_inputs["Observations"].append(
+            {
+                "area": area,
+                "observation": observation,
+                "impact": impact
+            }
+        )
+
+    if st.button("➕ Add another observation"):
+        st.session_state.observation_rows +=1
+        st.rerun()
 
 create_button = st.button("Create Growth Plan", type="primary")
 
@@ -98,19 +133,49 @@ if create_button:
         folder = growth_plan.INPUT_DIR / selected_folder
         last, first = growth_plan.split_last_first(selected_folder)
 
-        # Write any manual inputs to markdown files before proceeding
-        if "Job Functions" in manual_inputs and manual_inputs["Job Functions"].strip():
+        if (
+            "Job Functions" in manual_inputs and
+            manual_inputs["Job Functions"].strip()
+        ):
+            content = f"""# Job Title
+
+            {manual_inputs["Job Title"]}
+
+            #Job Functions
+
+            {manual_inputs["Job Functions"]}
+            """
             (folder / f"Job_Functions_{first}_{last}.md").write_text(
-                manual_inputs["Job Functions"], encoding="utf-8",
+                content, encoding="utf-8",
             )
 
-        if "Observations" in manual_inputs and manual_inputs["Observations"].strip():
+        if "Observations" in manual_inputs:
+            sections = []
+            for pair in manual_inputs["Observations"]:
+                if not pair["area"].strip():
+                    continue
+                sections.append(
+                    f"""## Area
+                    {pair["area"]}
+                    ### Observation
+                    {pair["observation"]}
+                    ### Impact
+                    {pair["impact"]}
+                    """
+                )
+            if not sections:
+                st.error("Please enter at least one observation.")
+                st.stope()
+
+            observations_md = "\n\n".join(sections)
             (folder / f"Observations_{first}_{last}.md").write_text(
-                manual_inputs["Observations"], encoding="utf-8",
+                observations_md, encoding="utf-8",
             )
-            
-        s_valid, required_files, missing_files = growth_plan.validate_inputs(selected_folder)
-        if not s_valid:
+
+        is_valid, required_files, missing_files = growth_plan.validate_inputs(
+            selected_folder
+        )
+        if not is_valid:
             st.error(f"Still missing: {', '.join(missing_files)}")
             st.stop()
             
