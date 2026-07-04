@@ -6,13 +6,16 @@ I need you to find best practices from respected L&D experts to help me create a
 Use best practices from L&D experts to generate a one-page growth plan for the following employee. Base it on the attached owning your work graphic and individual 16 personalities assessment. Also, base it on the functions of their role, advising/implementing information, and areas of improvement. Include the employee’s role, basic personality type, focus areas, development priorities, learning and development tactics with frequency, and success indicators.
 
 #### Need clarification on if this is employee specific:
-Putting on Your Advising and Implementing Hats Advising / Implementing 
-Advising 
+Putting on Your Advising and Implementing Hats Advising / Implementing
+
+Advising
+
 Advising is the intentional practice of stepping back from the day‑to‑day to analyze, reflect, and guide direction. It’s when you put on your “strategic hat” to review KPIs, evaluate progress, scan for risks or opportunities, and decide whether to pivot or maintain course. 
 
 Advising requires protected time for reflection, research, and sense‑making so that your insights shape smarter execution. 
 
-Implementing 
+Implementing
+
 Implementing is the focused practice of turning strategy into action. It’s when you put on your “execution hat” to complete tasks, move projects forward, hit milestones, and deliver tangible results. Implementing is about discipline, accountability, and follow‑through — ensuring that the ideas and decisions from Advising time actually come to life.
 
 ### Auto-include in prompt: Owning your work graphic
@@ -22,6 +25,29 @@ Implementing is the focused practice of turning strategy into action. It’s whe
 ### User input box: (Job functions) or (Job title - calls prompt for job functions)
 
 ### User input box(es): ((Area of Improvement)(Observation)(Impact) with + to add additional areas)
+
+# Prompt for one pager used July 2-4:
+
+Use best practices from L&D experts to generate a one-page growth plan for the following
+employee based on their individual 16 personalities assessment, the functions of their role,
+and their listed areas of improvement. Create a markdown growth plan that includes:
+
+# Growth Plan for [Person Name]
+### Role:[Person role]
+### Personality type: [Person personality type]
+### Focus Areas: [Person Focus Areas]
+
+## Development Priorities
+List two-four development priorities, including a brief summary of each issue and an approach
+to address it.
+
+## Learning and Development Tactics
+Include 3-5 areas for improvement with tactics and frequency for each. Format as three columns,
+labelled area, tactic, and frequency.
+
+## Success Indicators
+A bulleted list that can be used to evaluate successful improvements.
+
 
 # General prompt for final:
 Flesh out the attached growth plan. Include connections to best practices by L&D experts and Humane Connection concepts. It should be professional, strategic, and include a 30 day implementation plan. Focus on implementation, supervisor understanding how to support the employee, and the employee doing their job as a high performer. Format should include a brief summary of role, general personality type, and core focus, then sections for purpose & approach, development priorities that include behavioral goals, and their humane connection link, method, behavior-change design, and supervisor role, the 30 day implementation timeline, supervisory environment for growth, success indicators, and sustaining high performance. Make use of the attached implementation training as necessary.
