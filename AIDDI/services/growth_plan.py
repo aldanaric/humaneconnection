@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 from typing import Dict, List, Tuple
+from pypdf import PdfReader
 
 GROWTH_PLAN_DIR = Path("data/GrowthPlan")
 INPUT_DIR = GROWTH_PLAN_DIR / "Inputs"
@@ -22,8 +23,31 @@ def create_person_folder(folder_name: str):
     return folder, existed
 
 def save_uploaded_file(uploaded_file, destination):
-    if uploaded_file is not None:
+    if uploaded_file is None:
+        return
+
+    suffix = Path(uploaded_file.name).suffix.lower()
+    if suffix == ".md":
         destination.write_bytes(uploaded_file.getbuffer())
+    elif suffix == ".pdf":
+        text = extract_pdf_text(uploaded_file)
+        destination.write_text(text, encoding="utf-8")
+    else:
+        raise ValueError("Unsupported file type")
+
+def extract_pdf_text(uploaded_file) -> str:
+    reader = PdfReader(uploaded_file)
+
+    pages = []
+
+    for page in reader.pages:
+        text = page.extract_text()
+        if text:
+            pages.append(text)
+
+    return "\n\n".join(pages)
+
+
 
 def split_last_first(folder_name: str) -> Tuple[str, str]:
     """Return (last, first) from a Last_First folder name."""

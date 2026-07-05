@@ -1,11 +1,11 @@
 import asyncio
-
 import streamlit as st
 
 from ui.components import sidebar
 from ui.interactions import chat_handler
 import services.growth_plan as growth_plan
-import services.llm
+# 1. NEW ARCHITECTURE: Import our central LLM factory
+from services.llm_factory import get_llm
 
 st.set_page_config(
     page_title="Growth Plan",
@@ -16,22 +16,25 @@ st.set_page_config(
 st.header("Growth Plan")
 
 sidebar.render_sidebar()
+
+if "observation_rows" not in st.session_state:
+    st.session_state.observation_rows = 1
+
+# --- SECTION 1: File Upload & Profile Creation ---
 with st.expander("➕ Add New Profile"):
     with st.form('input'):
         folder_name = st.text_input("Input the person name for these files (Last, First)")
         personality = st.file_uploader(
-        "Personality Assessment",
-        type="md"
-        )
+            "Personality Assessment",
+            type=["md", "pdf"])
         job_functions = st.file_uploader(
-        "Job Functions",
-        type="md"
-        )
+            "Job Functions",
+            type=["md", "pdf"])
         observations = st.file_uploader(
-        "Observations",
-        type="md"
-        )
+            "Observations",
+            type=["md", 'pdf'])
         submit = st.form_submit_button("Add/Update Profile files")
+
 
 if submit:
     try:
@@ -57,6 +60,8 @@ if submit:
     except ValueError as e:
         st.error(str(e))
 
+
+# --- SECTION 2: Profile Selection & Validation ---
 st.markdown(
     "Select a person folder from `data/GrowthPlan`. "
     "The folder must be named `Last_First` and contain the required markdown inputs."
@@ -69,7 +74,6 @@ if not person_folders:
     st.stop()
 
 selected_folder = st.selectbox("Select person", person_folders)
-
 is_valid, required_files, missing_files = growth_plan.validate_inputs(selected_folder)
 
 st.subheader("Required inputs")
@@ -79,23 +83,49 @@ for label, path in required_files.items():
     else:
         st.error(f"Missing {label}")
 
+# Provide manual text areas if files are missing
 manual_inputs = {}
+
 if "Job Functions" in missing_files:
-    manual_inputs["Job Functions"] = st.text_area(
-        "Enter the employee's job title and job functions",
-        height=200
-    )
+    manual_inputs["Job Title"] = st.text_input("Job Title")
+    manual_inputs["Job Functions"] = st.text_area("Job functions",
+                                                  height=200
+                                                  )
 if "Observations" in missing_files:
-    manual_inputs["Areas for Improvement"] = st.text_area(
-        "Enter your observations and the impacts",
-        height=250
-    )
+    manual_inputs["Observations"] = []
+    st.subheader("Areas for Improvement")
 
-create_button = st.button(
-    "Create Growth Plan",
-    type="primary"
-)
+    for i in range(st.session_state.observation_rows):
+        area = st.text_input(f"**Area {i + 1}**:")
+        col1, col2 = st.columns(2)
+        with col1:
+            observation = st.text_area(
+                "Observation",
+                key=f"observation_{i}",
+                height=100,
+            )
+        with col2:
+            impact = st.text_area(
+                "Impact",
+                key=f"impact_{i}",
+                height=100
+            )
+        manual_inputs["Observations"].append(
+            {
+                "area": area,
+                "observation": observation,
+                "impact": impact
+            }
+        )
 
+    if st.button("➕ Add another observation"):
+        st.session_state.observation_rows +=1
+        st.rerun()
+
+create_button = st.button("Create Growth Plan", type="primary")
+
+
+# --- SECTION 3: Plan Generation ---
 if create_button:
     output_placeholder = st.empty()
 
@@ -104,32 +134,52 @@ if create_button:
         last, first = growth_plan.split_last_first(selected_folder)
 
         if (
-            "Job Functions" in manual_inputs
-            and manual_inputs["Job Functions"].strip()
+            "Job Functions" in manual_inputs and
+            manual_inputs["Job Functions"].strip()
         ):
-            (
-                folder / f"Job_Functions_{first}_{last}.md"
-            ).write_text(
-                manual_inputs["Job Functions"],
-                encoding="utf-8",
+            content = f"""# Job Title
+
+            {manual_inputs["Job Title"]}
+
+            #Job Functions
+
+            {manual_inputs["Job Functions"]}
+            """
+            (folder / f"Job_Functions_{first}_{last}.md").write_text(
+                content, encoding="utf-8",
             )
 
-        if (
-            "Observations" in manual_inputs
-            and manual_inputs["Observations"].strip()
-        ):
-            (
-                folder / f"Observations_{first}_{last}.md"
-            ).write_text(
-                manual_inputs["Observations"],
-                encoding="utf-8",
+        if "Observations" in manual_inputs:
+            sections = []
+            for pair in manual_inputs["Observations"]:
+                if not pair["area"].strip():
+                    continue
+                sections.append(
+                    f"""## Area
+                    {pair["area"]}
+                    ### Observation
+                    {pair["observation"]}
+                    ### Impact
+                    {pair["impact"]}
+                    """
+                )
+            if not sections:
+                st.error("Please enter at least one observation.")
+                st.stope()
+
+            observations_md = "\n\n".join(sections)
+            (folder / f"Observations_{first}_{last}.md").write_text(
+                observations_md, encoding="utf-8",
             )
-        s_valid, required_files, missing_files = growth_plan.validate_inputs(
+
+        is_valid, required_files, missing_files = growth_plan.validate_inputs(
             selected_folder
         )
         if not is_valid:
             st.error(f"Still missing: {', '.join(missing_files)}")
             st.stop()
+            
+        # Build the prompt array
         system_prompt = growth_plan.load_system_prompt()
         user_prompt = growth_plan.build_user_prompt(selected_folder)
         messages = [
@@ -137,15 +187,23 @@ if create_button:
             {"role": "user", "content": user_prompt},
         ]
 
-        with st.spinner("Creating growth plan..."):
-            _, response = asyncio.run(
-                chat_handler.run_conversation(
-                    messages,
-                    output_placeholder,
-                    max_tokens=4000,
-                )
-            )
+        # 2. NEW ARCHITECTURE: Fetch the active LLM provider
+        provider = get_llm()
 
+        # 3. NEW ARCHITECTURE: Define the async streaming block inline
+        async def generate_plan():
+            full_response = ""
+            async for chunk in provider.converse(messages, max_tokens=4000):
+                full_response += chunk
+                output_placeholder.markdown(full_response + "▌")
+            output_placeholder.markdown(full_response)
+            return full_response
+
+        # Execute the stream
+        with st.spinner("Creating growth plan..."):
+            response = asyncio.run(generate_plan())
+
+        # Save and Download outputs
         saved_path = growth_plan.save_growth_plan(selected_folder, response)
         st.success(f"Growth Plan saved to `{saved_path}`")
         st.download_button(
