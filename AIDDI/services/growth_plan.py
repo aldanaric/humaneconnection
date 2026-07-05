@@ -1,7 +1,6 @@
 import re
 from pathlib import Path
 from typing import Dict, List, Tuple
-from pypdf import PdfReader
 
 GROWTH_PLAN_DIR = Path("data/GrowthPlan")
 INPUT_DIR = GROWTH_PLAN_DIR / "Inputs"
