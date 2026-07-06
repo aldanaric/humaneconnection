@@ -185,13 +185,14 @@ if create_button:
             {"role": "user", "content": user_prompt},
         ]
         with st.spinner("Creating growth plan..."):
-            response = asyncio.run(
+            messages, response = asyncio.run(
                 chat_handler.run_conversation(
                     messages,
                     output_placeholder,
                     max_tokens=4000,
                 )
-        )
+            )
+        
 
 
 
