@@ -4,8 +4,6 @@ import streamlit as st
 from ui.components import sidebar
 from ui.interactions import chat_handler
 import services.growth_plan as growth_plan
-# 1. NEW ARCHITECTURE: Import our central LLM factory
-from services.llm_factory import get_llm
 
 st.set_page_config(
     page_title="Growth Plan",
@@ -186,22 +184,17 @@ if create_button:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ]
-
-        # 2. NEW ARCHITECTURE: Fetch the active LLM provider
-        provider = get_llm()
-
-        # 3. NEW ARCHITECTURE: Define the async streaming block inline
-        async def generate_plan():
-            full_response = ""
-            async for chunk in provider.converse(messages, max_tokens=4000):
-                full_response += chunk
-                output_placeholder.markdown(full_response + "▌")
-            output_placeholder.markdown(full_response)
-            return full_response
-
-        # Execute the stream
         with st.spinner("Creating growth plan..."):
-            response = asyncio.run(generate_plan())
+            messages, response = asyncio.run(
+                chat_handler.run_conversation(
+                    messages,
+                    output_placeholder,
+                    max_tokens=4000,
+                )
+            )
+        
+
+
 
         # Save and Download outputs
         saved_path = growth_plan.save_growth_plan(selected_folder, response)
