@@ -6,15 +6,12 @@ class Profile:
     id: str
     first_name: str
     last_name: str
+    company_name: str
     root: Path
 
     @property
     def display_name(self):
-        return f"{self.last_name}, {self.first_name}"
-
-    @property
-    def folder_name(self):
-        return f"{self.last_name}_{self.first_name}"
+        return f"{self.first_name} {self.last_name}"
 
     @property
     def personality_path(self) -> Path:
