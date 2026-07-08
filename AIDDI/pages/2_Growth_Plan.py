@@ -25,10 +25,6 @@ repo = ProfileRepository()
 
 NO_GENERATED_PLAN = "No plan has been generated this session"
 
-if "generated_growth_plan" not in st.session_state:
-    st.session_state["generated_growth_plan"] = NO_GENERATED_PLAN
-
-
 st.markdown("Select a profile to generate a growth plan for:")
 
 selected_profile = ""
@@ -66,6 +62,14 @@ else:
 
 if not selected_profile:
     st.stop()
+
+if (
+    "current_profile_id" not in st.session_state
+    or st.session_state.current_profile_id != selected_profile.id
+):
+    st.session_state.current_profile_id = selected_profile.id
+    st.session_state.generated_growth_plan = NO_GENERATED_PLAN
+    st.session_state.current_plan = None
 
 inputs_tab, generate_tab, output_tab = st.tabs(
     ["Inputs", "Generate", "Outputs"]

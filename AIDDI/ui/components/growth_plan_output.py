@@ -3,76 +3,79 @@ import streamlit as st
 from models.profile import Profile
 from repositories.profile_repository import ProfileRepository
 from models.document_type import DocumentType
+from models.growth_plan import GrowthPlan
 from services.pdf_export import markdown_to_pdf
 
 def render(profile: Profile, repo: ProfileRepository, NoPlan):
 
-    current_plan = st.session_state.generated_growth_plan
+    st.session_state.editor = st.session_state.generated_growth_plan
 
     saved_plans = repo.list_growth_plans(profile)
 
     selected_saved_plan = st.selectbox(
         "Load Previous Growth Plan",
         ["--None--"] + saved_plans,
-        format_func=lambda p: (
-            p.stem.replace("_", " ")
-            if p != "--None--"
-            else p
-        )
+        format_func=lambda p: p.title
+        if p != "--None--"
+        else p
     )
 
     if selected_saved_plan != "--None--":
-        st.session_state.generated_growth_plan = (
-            repo.load_growth_plan(selected_saved_plan)
-        )
-        st.session_state.current_plan_path = selected_saved_plan
+        st.session_state.current_plan = selected_saved_plan
+        st.session_state.editor = selected_saved_plan.content
 
     plan_name = st.text_input(
         "Growth Plan Name",
-        value=profile.display_name + " Growth Plan"
+        value=st.session_state.current_plan.title
+        if st.session_state.current_plan is not None
+        else profile.display_name + " growth plan"
     )
 
     st.markdown(
-        current_plan,
+        st.session_state.editor,
         unsafe_allow_html=False
     )
     if st.checkbox("Edit plan"):
         edited = st.text_area(
             "Review and edit the wording for the generated growth plan",
-            value=current_plan,
+            value=st.session_state.editor,
             height=800
         )
     else:
-        edited = current_plan
+        edited = st.session_state.editor
+
     if st.button(
         "Save as new Growth Plan",
-        disabled=current_plan==NoPlan,
+        disabled=st.session_state.editor==NoPlan,
     ):
-        path = repo.save_growth_plan(
+        new_plan = repo.save_growth_plan(
             profile,
             edited,
             plan_name
         )
-        st.session_state.current_plan_path = path
+        st.session_state.current_plan = new_plan
+        st.success(f"Saved {new_plan.title}")
 
-        st.success(f"Saved {path.name}")
     if st.button(
         "Save Changes",
         disabled=(
-            "current_plan_path"
+            "current_plan"
             not in st.session_state
         )
     ):
-        st.session_state.current_plan_path.write_text(
-            edited,
-            encoding="utf-8"
-        )
+        plan = st.session_state.current_plan
+        plan.content = edited
+
+        updated = repo.update_growth_plan(plan)
+
+        st.session_state.current_plan = updated
+
     st.download_button(
         "Download Growth Plan markdown",
         data=edited,
         file_name=f"{profile.display_name} growth plan.md",
         mime="text/markdown",
-        disabled=current_plan==NoPlan
+        disabled=st.session_state.editor==NoPlan
     )
     pdf_bytes = markdown_to_pdf(edited)
 
@@ -81,5 +84,5 @@ def render(profile: Profile, repo: ProfileRepository, NoPlan):
         data=pdf_bytes,
         file_name=f"{profile.display_name} growth plan.pdf",
         mime="application/pdf",
-        disabled=current_plan==NoPlan
+        disabled=st.session_state.editor==NoPlan
     )

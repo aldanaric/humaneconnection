@@ -2,11 +2,12 @@ import json
 import uuid
 from pathlib import Path
 from pypdf import PdfReader
-from datetime import datetime
 from pathlib import Path
+from datetime import datetime
 
 from models.profile import Profile
 from models.document_type import DocumentType
+from models.growth_plan import GrowthPlan
 
 
 class ProfileRepository:
@@ -120,68 +121,69 @@ class ProfileRepository:
 
         path.write_text(text, encoding="utf-8")
 
-    def growth_plan_directory(self, profile):
-        directory = profile.root / "GrowthPlans"
-        directory.mkdir(exist_ok=True)
-        return directory
-
-    def get_unique_path(self, directory: Path, filename: str) -> Path:
-
-        path = directory / filename
-
-        if not path.exists():
-            return path
-
-        stem = path.stem
-        suffix = path.suffix
-
-        counter = 2
-
-        while True:
-            new_path = directory / f"{stem}_{counter}{suffix}"
-
-            if not new_path.exists():
-                return new_path
-
-            counter +=1
-
 
 
     def save_growth_plan(
         self,
-        profile,
+        profile: Profile,
         content: str,
-        name: str | None = None
-    ) -> Path:
+        title: str
+    ) -> GrowthPlan:
 
-        directory = self.growth_plan_directory(profile)
+        directory = self._growth_plan_directory(profile)
 
-        filename = f"{name}.md"
+        filename = f"{title}.md"
 
-        path = self.get_unique_path(directory, filename)
+        path = self._get_unique_path(directory, filename)
 
         path.write_text(
             content,
             encoding="utf-8"
         )
 
-        return path
+        return self._growth_plan_from_path(profile, path)
 
-    def list_growth_plans(self, profile) -> list[Path]:
-        directory = self.growth_plan_directory(profile)
+    def update_growth_plan(
+        self,
+        plan: GrowthPlan
+    ) -> GrowthPlan:
+        path = self._growth_plan_path_from_id(
+            plan.profile_id,
+            plan.id
+        )
+
+        path.write_text(
+            plan.content,
+            encoding="utf-8"
+        )
+
+        return self.load_growth_plan(
+            self.get_profile(plan.profile_id),
+            plan.id
+        )
+
+    def list_growth_plans(self, profile) -> list[GrowthPlan]:
+        directory = self._growth_plan_directory(profile)
 
         return sorted(
-            directory.glob("*.md"),
+            (
+            self._growth_plan_from_path(profile, path)
+            for path in directory.glob("*.md")
+            ),
+            key=lambda p: p.modified,
             reverse=True
         )
 
     def load_growth_plan(
         self,
-        path: Path
-    ) -> str:
-        return path.read_text(
-            encoding="utf-8"
-        )
+        profile: Profile,
+        plan_id: str
+    ) -> GrowthPlan:
+
+        path = self._growth_plan_path(profile, plan_id)
+
+        return self._growth_plan_from_path(profile, path)
+
 
     def upload_document(
         self,
@@ -259,4 +261,61 @@ class ProfileRepository:
                 pages.append(text)
 
         return "\n\n".join(pages)
+
+    def _growth_plan_directory(self, profile: Profile):
+        directory = profile.root / "GrowthPlans"
+        directory.mkdir(exist_ok=True)
+        return directory
+
+    def _get_unique_path(self, directory: Path, filename: str) -> Path:
+
+        path = directory / filename
+
+        if not path.exists():
+            return path
+
+        stem = path.stem
+        suffix = path.suffix
+
+        counter = 2
+
+        while True:
+            new_path = directory / f"{stem}_{counter}{suffix}"
+
+            if not new_path.exists():
+                return new_path
+
+            counter +=1
+
+    def _growth_plan_from_path(
+        self,
+        profile: Profile,
+        path: Path
+    ) -> GrowthPlan:
+
+        stat = path.stat()
+
+        return GrowthPlan(
+            id=path.stem,
+            profile_id=profile.id,
+            title=path.stem.replace("_", " "),
+            content=path.read_text(encoding="utf-8"),
+            created=datetime.fromtimestamp(stat.st_ctime),
+            modified=datetime.fromtimestamp(stat.st_mtime)
+        )
+
+    def _growth_plan_path(
+        self,
+        profile: Profile,
+        plan_id: str
+    ) -> Path:
+        return self._growth_plan_directory(profile) / f"{plan_id}.md"
+
+    def _growth_plan_path_from_id(
+        self,
+        profile_id: str,
+        plan_id: str
+    ) -> Path:
+        profile = self.get_profile(profile_id)
+        return self._growth_plan_directory(profile) / f"{plan_id}.md"
 

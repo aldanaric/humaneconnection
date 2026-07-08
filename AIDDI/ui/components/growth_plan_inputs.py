@@ -86,28 +86,31 @@ def render(profile: Profile, repo: ProfileRepository):
     for i, obs in enumerate(observations_list):
         with st.container(border=True):
             area_key = f"{profile.id}_area_{i}"
-            if area_key not in st.session_state:
-                st.session_state[area_key] = obs.area
-            obs.area = st.text_input(
+            #if area_key not in st.session_state:
+             #   st.session_state[area_key] = obs.area
+            area = st.text_input(
                 f"**Area {i + 1} for Improvement**:",
+                value=obs.area,
                 key=area_key
             )
             col1, col2 = st.columns(2)
             with col1:
                 observation_key = f"{profile.id}_observation_{i}"
-                if observation_key not in st.session_state:
-                    st.session_state[observation_key] = obs.observation
-                obs.observation = st.text_area(
+               # if observation_key not in st.session_state:
+                #    st.session_state[observation_key] = obs.observation
+                observation = st.text_area(
                     "Observation",
+                    value=obs.observation,
                     key=observation_key,
                     height=100,
                 )
             with col2:
                 impact_key = f"{profile.id}_impact_{i}"
-                if impact_key not in st.session_state:
-                    st.session_state[impact_key] = obs.impact
-                obs.impact = st.text_area(
+                #if impact_key not in st.session_state:
+                 #   st.session_state[impact_key] = obs.impact
+                impact = st.text_area(
                     "Impact",
+                    value=obs.impact,
                     key=impact_key,
                     height=100
                 )
@@ -126,17 +129,20 @@ def render(profile: Profile, repo: ProfileRepository):
             st.rerun()
     with col2:
         if st.button("Save Areas for Improvement"):
-            for i, obs in enumerate(observations_list):
-                obs.area = st.session_state[f"{profile.id}_area_{i}"]
-
-                obs.observation = st.session_state[
-                    f"{profile.id}_observation_{i}"
-                ]
-
-                obs.impact = st.session_state[
-                    f"{profile.id}_impact_{i}"
-                ]
-            observation_markdown = observations.observations_to_markdown(observations_list)
+            updated = []
+            for i in range(len(observations_list)):
+                updated.append(
+                    Observation(
+                        area = st.session_state[f"{profile.id}_area_{i}"],
+                        observation = st.session_state[
+                            f"{profile.id}_observation_{i}"
+                        ],
+                        impact = st.session_state[
+                            f"{profile.id}_impact_{i}"
+                        ]
+                    )
+                )
+            observation_markdown = observations.observations_to_markdown(updated)
             repo.save_document(
                 profile,
                 DocumentType.OBSERVATIONS,

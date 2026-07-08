@@ -41,3 +41,4 @@ def render(profile: Profile, repo: ProfileRepository):
                 )
             )
         st.session_state["generated_growth_plan"] = response
+        st.session_state["selected_plan"] = None
