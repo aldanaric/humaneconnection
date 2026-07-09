@@ -22,7 +22,8 @@ dependencies = [
     "google-genai",
     "playright",
     "chromium",
-    "markdown"
+    "markdown",
+    "pypdf>=6.14.2",
 ]
 
 [build-system]
