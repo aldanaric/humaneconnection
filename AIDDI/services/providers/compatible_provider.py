@@ -1,19 +1,25 @@
-import os
 import traceback
 
 from typing import List, Dict, Tuple, AsyncGenerator
 
 from openai import AsyncOpenAI, OpenAI, OpenAIError
 
+from services.llm_config import resolve_config
+
 
 
 
 def converse_sync(prompt: str, messages: List[Dict[str, str]], model=None) -> Tuple[str, List[Dict[str, str]]]:
+    config = resolve_config()
+    if not config.is_ready:
+        missing = ", ".join(config.missing_requirements)
+        raise ValueError(f"{config.provider.label} is missing: {missing}.")
+
     if model is None:
-        model = os.getenv("LLM_MODEL")
+        model = config.model
     client = OpenAI(
-        api_key=os.getenv("LLM_API_KEY"),
-        base_url=os.getenv("LLM_BASE_URL"))
+        api_key=config.api_key,
+        base_url=config.base_url)
 
     # Add the user's message to the list of messages
     if messages is None:
@@ -43,10 +49,16 @@ async def converse(messages: List[Dict[str, str]], max_tokens: int = 1600) -> As
 
     :return: a generator of delta string responses
     """
-    model = os.getenv("LLM_MODEL")
+    config = resolve_config()
+    if not config.is_ready:
+        missing = ", ".join(config.missing_requirements)
+        yield f"EXCEPTION {config.provider.label} is missing: {missing}."
+        return
+
+    model = config.model
     aclient = AsyncOpenAI(
-        api_key=os.getenv("LLM_API_KEY"),
-        base_url=os.getenv("LLM_BASE_URL")
+        api_key=config.api_key,
+        base_url=config.base_url
     )
     try:
         async for chunk in await aclient.chat.completions.create(model=model,
