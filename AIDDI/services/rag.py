@@ -1,344 +1,229 @@
-import csv
+"""Retrieval-Augmented Generation over the locally built Humane Connection index.
+
+This module queries the hybrid TF-IDF + LSA index produced by
+``services/rag_builder.py`` (see ``services/rag_index_manager.py`` for where the
+index lives and how it is rebuilt). It intentionally does not call any external
+embeddings API: the index and the query embedding both come from the same local
+scikit-learn artifacts (``tfidf_vectorizer.joblib`` / ``svd_model.joblib``), so
+retrieval stays consistent with how the corpus vectors were produced.
+
+If the knowledge base has never been built, or is stale relative to the source
+documents, the retrieval functions below raise a clear, actionable error instead
+of silently returning nothing.
+"""
+from __future__ import annotations
+
 import io
-import numpy as np
+import json
 import os
-import tiktoken as tkn
-from PIL import Image
-from PyPDF2 import PdfReader
-from openai import OpenAI
-from pdf2image import convert_from_path
-from sklearn.neighbors import NearestNeighbors
-from typing import List, Tuple
+import threading
+from pathlib import Path
+from typing import Any
 
-# Global configuration
-EMBEDDING_MODEL = "text-embedding-3-small"  # OpenAI's best embeddings as of Feb 2024
-CSV_FILE_PATH = "data/HumaneConnection.embeddings.csv"
+import joblib
+import numpy as np
+from scipy import sparse
 
-async def ask_book(query: str, return_image: bool = False):
-    """
-    Main RAG (Retrieval Augmented Generation) implementation.
-    Takes a query about the book and returns relevant information with optional page image.
+from services import rag_builder, rag_index_manager
 
-    Returns:
-    {
-        "answer": str,           # Generated response using context
-        "page_number": int,      # Page where context was found
-        "context": str,          # Text chunk used for answer
-        "image_data": bytes      # Optional PNG of page if return_image=True
-    }
-    """
+# Hybrid weighting, matches the value recorded in each build's manifest.json
+# ("retrieval_default": "hybrid cosine: 0.65 sparse TF-IDF + 0.35 dense LSA").
+SPARSE_WEIGHT = 0.65
+DENSE_WEIGHT = 0.35
 
-    # Source PDF path
-    pdf_path = "data/HumaneConnection.pdf"
+_lock = threading.Lock()
+_cache: dict[str, Any] = {}
 
-    # --- Embedding management ---
-    # 1. Check if embeddings exist in CSV_FILE_PATH
-    if not os.path.exists(CSV_FILE_PATH):
-        # 2. Embeddings don't exist — generate and save them
-        # Extract text from PDF
-        pages_text = __extract_text_from_pdf(pdf_path)
 
-        # Chunk the text
-        chunks = __chunk_prompt(pages_text)
+class RAGNotReadyError(RuntimeError):
+    """Raised when the knowledge base index is missing, incomplete, or stale."""
 
-        # Separate page numbers and text for embedding
-        chunk_page_numbers = [page_num for page_num, _ in chunks]
-        chunk_texts = [text for _, text in chunks]
 
-        # Calculate embeddings using local model
-        embeddings = await __calculate_embeddings(chunk_texts)
+def _load_index() -> dict[str, Any]:
+    """Load (and cache) the vectorizer, SVD model, corpus vectors, and chunks."""
+    index_dir = rag_index_manager.index_dir()
+    status = rag_index_manager.get_status()
 
-        # Determine document name from PDF path
-        document_name = os.path.basename(pdf_path)
-
-        # Save to CSV for future use
-        save_embeddings_to_csv(
-            file_path=CSV_FILE_PATH,
-            document_name=document_name,
-            page_numbers=chunk_page_numbers,
-            embeddings=embeddings,
-            contexts=chunk_texts
+    if status.state in {"missing", "incomplete", "building"}:
+        raise RAGNotReadyError(
+            f"The Humane Connection knowledge base isn't ready yet ({status.message}). "
+            "Open the Knowledge Base page and click 'Rebuild knowledge base', or run "
+            "`python scripts/rebuild_rag.py`."
         )
 
-    # 3. Load embeddings from CSV
-    records = load_embeddings_from_csv(CSV_FILE_PATH)
+    with _lock:
+        cached = _cache.get("index_dir")
+        cached_built_at = _cache.get("built_at_utc")
+        if cached == str(index_dir) and cached_built_at == status.built_at_utc:
+            return _cache
 
-    # --- Semantic search ---
-    # 1. Set up nearest neighbors search with sklearn (cosine similarity)
-    if not records:
-        raise RuntimeError(f"No embeddings loaded from {CSV_FILE_PATH}")
+        vectorizer = joblib.load(index_dir / "tfidf_vectorizer.joblib")
+        svd_model = joblib.load(index_dir / "svd_model.joblib")
+        tfidf_matrix = sparse.load_npz(index_dir / "tfidf_matrix.npz")
+        dense_matrix = np.load(index_dir / "embeddings.npy")
 
-    top_k = 3
+        chunks: list[dict[str, Any]] = []
+        with open(index_dir / "chunks.jsonl", "r", encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if line:
+                    chunks.append(json.loads(line))
 
-    embedding_matrix = np.array(
-        [record["embedding"] for record in records],
-        dtype=np.float32
-    )
-    nn_model = NearestNeighbors(n_neighbors=top_k, metric="cosine")
-    nn_model.fit(embedding_matrix)
+        if not (len(chunks) == tfidf_matrix.shape[0] == dense_matrix.shape[0]):
+            raise RAGNotReadyError(
+                "The knowledge base index looks corrupted (row counts don't match "
+                "between chunks.jsonl, tfidf_matrix.npz, and embeddings.npy). "
+                "Rebuild it from the Knowledge Base page."
+            )
 
-    # 2. Get embedding for user's query
-    local_embedder = LocalEmbeddingGenerator()
-    query_embedding = local_embedder.generate_single_embedding(query)
-    query_vector = np.array(query_embedding, dtype=np.float32).reshape(1, -1)
+        _cache.clear()
+        _cache.update(
+            {
+                "index_dir": str(index_dir),
+                "built_at_utc": status.built_at_utc,
+                "vectorizer": vectorizer,
+                "svd_model": svd_model,
+                "tfidf_matrix": tfidf_matrix,
+                "dense_matrix": dense_matrix,
+                "chunks": chunks,
+            }
+        )
+        return _cache
 
-    # 3. Find most relevant contexts using cosine similarity
-    distances, indices = nn_model.kneighbors(query_vector)
 
-    top_records = [records[i] for i in indices[0]]
+def _location_label(chunk: dict[str, Any]) -> str:
+    page_start, page_end = chunk.get("page_start"), chunk.get("page_end")
+    if page_start is not None:
+        if page_end is not None and page_end != page_start:
+            return f"pages {page_start}-{page_end}"
+        return f"page {page_start}"
+    para_start, para_end = chunk.get("paragraph_start"), chunk.get("paragraph_end")
+    if para_start is not None:
+        if para_end is not None and para_end != para_start:
+            return f"paragraphs {para_start}-{para_end}"
+        return f"paragraph {para_start}"
+    return "location not recorded"
+
+
+def retrieve_context(query: str, top_k: int = 3) -> dict[str, Any]:
+    """Retrieve the most relevant Humane Connection chunks for ``query``.
+
+    Uses a hybrid of sparse TF-IDF cosine similarity and dense LSA cosine
+    similarity, matching the retrieval method the index was built and
+    validated with.
+    """
+    if not query or not query.strip():
+        raise ValueError("query must not be empty")
+
+    index = _load_index()
+    vectorizer = index["vectorizer"]
+    svd_model = index["svd_model"]
+    tfidf_matrix = index["tfidf_matrix"]
+    dense_matrix = index["dense_matrix"]
+    chunks = index["chunks"]
+
+    requested_top_k = max(1, min(int(top_k), len(chunks)))
+
+    query_tfidf = vectorizer.transform([query])  # already L2-normalized (norm="l2" default)
+    sparse_scores = np.asarray(tfidf_matrix.dot(query_tfidf.T).todense()).ravel()
+
+    query_dense = svd_model.transform(query_tfidf).astype(np.float32)
+    query_norm = np.linalg.norm(query_dense, axis=1, keepdims=True)
+    query_norm[query_norm == 0] = 1.0
+    query_dense = query_dense / query_norm
+    dense_scores = dense_matrix.dot(query_dense.reshape(-1))
+
+    hybrid_scores = SPARSE_WEIGHT * sparse_scores + DENSE_WEIGHT * dense_scores
+
+    top_indices = np.argsort(hybrid_scores)[::-1][:requested_top_k]
+
+    top_records = []
+    for idx in top_indices:
+        chunk = chunks[int(idx)]
+        top_records.append(
+            {
+                "document_name": chunk.get("source"),
+                "source": chunk.get("source"),
+                "section": chunk.get("section"),
+                "location": _location_label(chunk),
+                "page_number": chunk.get("page_start"),
+                "context": chunk.get("text", ""),
+                "text": chunk.get("text", ""),
+                "score": float(hybrid_scores[int(idx)]),
+            }
+        )
+
+    if not top_records:
+        raise RuntimeError("No relevant passages were found in the knowledge base.")
+
     best_record = top_records[0]
-
-    # Use the first/best chunk as the displayed reference
-    context = best_record["context"]
-    page_number = best_record["page_number"]
-
-    # Combine top chunks for the LLM context
     combined_context = "\n\n---\n\n".join(
-        [
-            f"Page {record['page_number']}:\n{record['context']}"
-            for record in top_records
-        ]
+        f"Source: {record['document_name']}, {record['location']}\n{record['context']}"
+        for record in top_records
     )
 
-    # --- Answer generation ---
-    # 1. Format prompt with context and query
-    prompt = (
-        f"You are an expert assistant for the 'The Humane Connection'.\n"
-        f"Use the following excerpts from the book to answer the user's question.\n\n"
-        f"Book excerpts:\n{combined_context}\n\n"
-        f"User question: {query}\n\n"
-        f"Provide a clear, helpful answer based on the excerpts above."
-    )
-
-    # 2. Get response from LLM using converse_sync
-    from services.llm import converse_sync
-    answer, _ = converse_sync(prompt=prompt, messages=[])
-
-    # 3. Package results
-    result = {
-        "answer": answer,
-        "page_number": page_number,
-        "context": context,
+    return {
+        "context": best_record["context"],
+        "page_number": best_record["page_number"],
+        "document_name": best_record["document_name"],
+        "combined_context": combined_context,
+        "records": top_records,
     }
 
-    # --- Optional: Handle page image extraction ---
+
+async def ask_book(query: str, return_image: bool = False) -> dict[str, Any]:
+    """Answer a question using the local Humane Connection knowledge base."""
+    retrieved = retrieve_context(query, top_k=3)
+    prompt = (
+        "You are an expert assistant for Humane Connection.\n"
+        "Answer the user's question using the retrieved Humane Connection "
+        "excerpts below. Do not claim that unsupported details are in the source.\n\n"
+        f"Retrieved excerpts:\n{retrieved['combined_context']}\n\n"
+        f"User question: {query}\n\n"
+        "Provide a clear, practical answer grounded in the excerpts."
+    )
+
+    from services.llm import converse_sync
+
+    answer, _ = converse_sync(prompt=prompt, messages=[])
+    result = {
+        "answer": answer,
+        "page_number": retrieved["page_number"],
+        "context": retrieved["context"],
+        "document_name": retrieved["document_name"],
+        "records": retrieved["records"],
+    }
+
     if return_image:
-        try:
-            image_data = __extract_page_as_image(pdf_path, page_number)
-        except RuntimeError as e:
-            print(f"RAG image generation skipped: {e}")
-            image_data = b""
-        result["image_data"] = image_data
+        result["image_data"] = b""
+        document_name = retrieved.get("document_name")
+        page_number = retrieved.get("page_number")
+        if document_name and str(document_name).lower().endswith(".pdf") and page_number:
+            pdf_path = rag_index_manager.source_dir() / document_name
+            try:
+                result["image_data"] = _extract_page_as_image(pdf_path, page_number)
+            except Exception as exc:
+                print(f"RAG image generation skipped: {exc}")
 
     return result
 
-def __extract_text_from_pdf(pdf_path: str) -> List[Tuple[int, str]]:
-    """
-    Extract text content from each page of the PDF.
-    Returns: List of (page_number, page_text) tuples
-    """
-    pages_text = []
-    with open(pdf_path, "rb") as f:
-        reader = PdfReader(f)
-        num_pages = len(reader.pages)
-        for page_index in range(num_pages):
-            page = reader.pages[page_index]
-            text = page.extract_text() or ""
-            # page_number is 1-based
-            pages_text.append((page_index + 1, text))
-    return pages_text
 
-def __extract_page_as_image(pdf_path: str, page_number: int) -> bytes:
-    """
-    Convert a specific PDF page to a PNG image.
-    Returns: Raw PNG image data as bytes
-    """
-    # pdf2image uses 1-based page numbers via first_page/last_page
+def _extract_page_as_image(pdf_path: Path, page_number: int) -> bytes:
+    """Convert a specific PDF page to PNG image bytes for the evidence panel."""
+    from pdf2image import convert_from_path
+
     try:
         images = convert_from_path(
-            pdf_path,
-            first_page=page_number,
-            last_page=page_number,
-            dpi=150
+            str(pdf_path), first_page=page_number, last_page=page_number, dpi=150
         )
-    except Exception as e:
+    except Exception as exc:
         raise RuntimeError(
-            "Unable to render PDF page image. "
-            "Make sure Poppler is installed and available in PATH. "
-            f"Original error: {e}"
+            "Unable to render PDF page image. Make sure Poppler is installed and "
+            f"available in PATH. Original error: {exc}"
         )
 
     if not images:
         return b""
-    img = images[0]
     buffer = io.BytesIO()
-    img.save(buffer, format="PNG")
+    images[0].save(buffer, format="PNG")
     return buffer.getvalue()
-
-async def __chunk_prompt(
-    pages_text: List[Tuple[int, str]],
-    chunk_size: int = 1500,
-    overlap: int = 50
-) -> List[Tuple[int, str]]:
-    """
-    Split text into chunks suitable for embedding.
-
-    For this project, keep one primary chunk per page, but add light overlap
-    from the previous and next pages to preserve context continuity.
-
-    The returned page_number is still the primary page used for evidence display.
-    """
-    encoding = tkn.get_encoding("cl100k_base")
-    chunks = []
-
-    for i, (page_number, text) in enumerate(pages_text):
-        center_text = text.strip()
-        if not center_text:
-            continue
-
-        parts = []
-
-        # Add trailing overlap from previous page
-        if i > 0:
-            prev_text = pages_text[i - 1][1].strip()
-            if prev_text:
-                prev_tokens = encoding.encode(prev_text)
-                prev_overlap_text = encoding.decode(prev_tokens[-overlap:]) if len(prev_tokens) > overlap else prev_text
-                parts.append(prev_overlap_text)
-
-        # Add full current page
-        parts.append(center_text)
-
-        # Add leading overlap from next page
-        if i < len(pages_text) - 1:
-            next_text = pages_text[i + 1][1].strip()
-            if next_text:
-                next_tokens = encoding.encode(next_text)
-                next_overlap_text = encoding.decode(next_tokens[:overlap]) if len(next_tokens) > overlap else next_text
-                parts.append(next_overlap_text)
-
-        chunk_text = "\n\n".join(parts).strip()
-        chunks.append((page_number, chunk_text))
-
-    return chunks
-
-# TODO: Use this local embedding generator to embed text without network API calls
-LOCAL_EMBEDDING_MODEL = "all-mpnet-base-v2"  # Better accuracy local model (~420MB)
-class LocalEmbeddingGenerator():
-    """Local embedding generator using sentence-transformers."""
-
-    def __init__(self, model_name: str = LOCAL_EMBEDDING_MODEL):
-        self.model_name = model_name
-        self._model = None
-        self._dimension = None
-
-    def _load_model(self):
-        """Lazy load the sentence transformer model."""
-        if self._model is None:
-            try:
-                from sentence_transformers import SentenceTransformer
-                print(f"Loading local embedding model: {self.model_name}")
-                self._model = SentenceTransformer(self.model_name, device="cpu")
-                # Test embedding to get dimension
-                test_embedding = self._model.encode(["test"], normalize_embeddings=True)
-                self._dimension = test_embedding.shape[1]
-                print(f"Local embedding model loaded. Dimension: {self._dimension}")
-            except ImportError:
-                raise ImportError(
-                    "sentence-transformers is required for local embeddings. Install with: pip install sentence-transformers")
-            except Exception as e:
-                raise RuntimeError(f"Failed to load local embedding model {self.model_name}: {e}")
-
-    def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
-        """Generate embeddings for a list of texts."""
-        self._load_model()
-        embeddings = self._model.encode(texts, batch_size=32, normalize_embeddings=True)
-        return embeddings.tolist()
-
-    def generate_single_embedding(self, text: str) -> List[float]:
-        """Generate embedding for a single text."""
-        self._load_model()
-        embedding = self._model.encode([text], normalize_embeddings=True)
-        return embedding[0].tolist()
-
-    @property
-    def embedding_dimension(self) -> int:
-        """Return the dimension of the embeddings."""
-        if self._dimension is None:
-            self._load_model()
-        return self._dimension
-
-
-async def __calculate_embeddings(documents: List[str], batch_size: int = 20) -> List[List[float]]:
-    """
-    Get embeddings for text chunks using sentence transformers.
-
-    Hint: Use the local embedding generator above for offline embedding.
-
-    Args:
-        documents: List of text chunks to embed
-        batch_size: Number of chunks to process at once
-
-    Returns: List of embedding vectors (each vector is List[float])
-    """
-    generator = LocalEmbeddingGenerator()
-    all_embeddings = []
-
-    for i in range(0, len(documents), batch_size):
-        batch = documents[i:i + batch_size]
-        batch_embeddings = generator.generate_embeddings(batch)
-        all_embeddings.extend(batch_embeddings)
-
-    return all_embeddings
-
-def save_embeddings_to_csv(file_path: str, document_name: str, page_numbers: List[int], embeddings: List[List[float]], contexts: List[str]):
-    """
-    Cache embeddings to CSV for faster future lookups.
-
-    CSV Format:
-    document_name, page_number, embedding, context
-
-    Args:
-        file_path: Where to save the CSV
-        document_name: Identifier for the source document
-        page_numbers: List of page numbers for each chunk
-        embeddings: List of embedding vectors
-        contexts: List of text chunks
-    """
-    # Ensure the directory exists
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-    with open(file_path, "w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.writer(csvfile)
-        # Write header
-        writer.writerow(["document_name", "page_number", "embedding", "context"])
-        # Write each record
-        for page_number, embedding, context in zip(page_numbers, embeddings, contexts):
-            # Serialize embedding as a comma-separated string inside the cell
-            embedding_str = str(embedding)
-            writer.writerow([document_name, page_number, embedding_str, context])
-
-def load_embeddings_from_csv(file_path: str) -> List[dict]:
-    """
-    Load previously cached embeddings from CSV.
-
-    Returns: List of dicts with keys:
-        - document_name: str
-        - page_number: int
-        - embedding: List[float]
-        - context: str
-    """
-    import ast
-
-    records = []
-    with open(file_path, "r", encoding="utf-8") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            embedding = ast.literal_eval(row["embedding"])
-            records.append({
-                "document_name": row["document_name"],
-                "page_number": int(row["page_number"]),
-                "embedding": embedding,
-                "context": row["context"],
-            })
-    return records

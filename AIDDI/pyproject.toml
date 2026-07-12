@@ -20,7 +20,7 @@ dependencies = [
     "streamlit-ace>=0.1.1",
     "streamlit-monaco>=0.1.3",
     "google-genai",
-    "playright",
+    "playwright",
     "chromium",
     "markdown",
     "pypdf>=6.14.2",
