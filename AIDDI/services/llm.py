@@ -11,8 +11,6 @@ load_dotenv()
 def create_conversation_starter(user_prompt: str) -> List[Dict[str, str]]:
     """
     Given a user prompt, create a conversation history with the following format:
-@@ -75,3 +17,11 @@ def create_conversation_starter(user_prompt: str) -> List[Dict[str, str]]:
-@@ -75,3 +17,11 @@ def create_conversation_starter(user_prompt: str) -> List[Dict[str, str]]:
     :return: a conversation history
     """
     return [{"role": "user", "content": user_prompt}]

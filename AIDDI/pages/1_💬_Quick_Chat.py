@@ -18,7 +18,7 @@ st.header("Quick Chat")
 st.write("Get instant answers to your Humane Connection questions.")
 
 # Toggle for Retrieval-Augmented Generation (RAG) vs Standard Chat
-ask_book = st.checkbox("Use The Humane Connection context.", value=False)
+ask_book = st.checkbox("Use Humane Connection", value=True, key="quick_chat_use_humane_connection")
 
 # --- Session State Initialization ---
 if "messages" not in st.session_state:
@@ -37,6 +37,8 @@ for message in [m for m in st.session_state.messages if m["role"] != "system"]:
     if avatar:
         with st.chat_message(message["role"], avatar=avatar):
             page_number = message.get("page_number")
+            document_name = message.get("document_name")
+            location = message.get("location")
             image_data = message.get("image_data")
             context = message.get("content", "")
 
@@ -44,7 +46,11 @@ for message in [m for m in st.session_state.messages if m["role"] != "system"]:
                 f"See page {page_number}" if page_number is not None else "Evidence",
                 expanded=False
             ):
-                if page_number is not None:
+                if document_name:
+                    st.write(f"Source: {document_name}")
+                if location:
+                    st.write(f"Location: {location}")
+                elif page_number is not None:
                     st.write(f"Page Number: {page_number}")
                 if image_data:
                     st.image(image_data, caption=f"Page {page_number}")
