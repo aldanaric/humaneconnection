@@ -32,8 +32,10 @@ st.set_page_config(
     layout="wide"
 )
 
+sidebar.render_sidebar()
+
 pg.run()
 
-sidebar.render_sidebar()
+
 
 

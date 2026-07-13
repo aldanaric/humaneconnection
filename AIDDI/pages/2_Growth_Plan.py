@@ -23,7 +23,7 @@ st.set_page_config(
 
 st.header("Growth Plan")
 
-sidebar.render_sidebar()
+#sidebar.render_sidebar()
 
 repo = ProfileRepository()
 
