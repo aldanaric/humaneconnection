@@ -15,7 +15,7 @@ st.set_page_config(
     layout="wide"
 )
 
-sidebar.show()
+#sidebar.show()
 
 st.header("Quick Chat")
 st.write("Get instant answers to your Humane Connection questions.")

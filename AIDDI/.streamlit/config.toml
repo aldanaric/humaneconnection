@@ -84,14 +84,12 @@ backgroundColor = "#24AAF3"
 
 [client]
 
-# Cleaner executive app feel
-showErrorDetails = false
+showErrorDetails = "none"
 
 
 [server]
 
-# Production-friendly
-headless = true
+headless = false
 
 
 [browser]

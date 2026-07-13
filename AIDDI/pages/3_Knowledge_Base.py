@@ -19,7 +19,7 @@ st.write(
     "index (TF-IDF + LSA) used by Quick Chat and Growth Plan."
 )
 
-sidebar.show()
+#sidebar.show()
 
 status = rag_index_manager.get_status()
 
