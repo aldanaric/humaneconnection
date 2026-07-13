@@ -1,11 +1,15 @@
+from pathlib import Path
+
 import streamlit as st
 
 from ui.components import sidebar
 from services import rag_index_manager
 
+logo = Path(__file__).resolve().parent / "static" / "AIDDIlogopendingquare.png"
+
 st.set_page_config(
     page_title="Knowledge Base",
-    page_icon="📚",
+    page_icon=logo,
     layout="wide",
 )
 

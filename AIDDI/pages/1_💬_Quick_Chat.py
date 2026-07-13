@@ -1,14 +1,17 @@
 import asyncio
+from pathlib import Path
+
 import streamlit as st
 
 from services import prompts
 from ui.components import sidebar
 from ui.interactions import chat_handler, book_handler
 
+logo = Path(__file__).resolve().parent / "static" / "AIDDIlogopendingquare.png"
 # --- Page Configuration ---
 st.set_page_config(
     page_title="Quick Chat",
-    page_icon="💬",
+    page_icon=logo,
     layout="wide"
 )
 
@@ -63,12 +66,12 @@ for message in [m for m in st.session_state.messages if m["role"] != "system"]:
 
 # --- Handle New User Input ---
 if prompt := st.chat_input("Ask a question."):
-    
+
     # Pathway A: RAG / Document Chat
     if ask_book:
         asyncio.run(book_handler.ask_book(st.session_state.messages, prompt))
         st.rerun()
-        
+
     # Pathway B: Standard LLM Chat via Factory Pattern
     else:
         asyncio.run(chat_handler.chat(st.session_state.messages, prompt))

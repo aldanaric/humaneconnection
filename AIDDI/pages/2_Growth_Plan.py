@@ -1,4 +1,6 @@
 import asyncio
+from pathlib import Path
+
 import streamlit as st
 
 from ui.components import sidebar
@@ -11,9 +13,11 @@ from ui.components import growth_plan_inputs
 from ui.components import generate_growth_plan
 from ui.components import growth_plan_output
 
+logo = Path(__file__).resolve().parent / "static" / "AIDDIlogopendingquare.png"
+
 st.set_page_config(
     page_title="Growth Plan",
-    page_icon="🌱",
+    page_icon=logo,
     layout="wide"
 )
 
