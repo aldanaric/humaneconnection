@@ -3,8 +3,8 @@ import streamlit as st
 from services import llm_config
 
 
-def render_sidebar() -> None:   
-    show()  
+def render_sidebar() -> None:
+    show()
 
 
 def _render_sidebar_layout_css() -> None:
@@ -124,15 +124,17 @@ def show() -> None:
     with st.sidebar:
         _render_sidebar_layout_css()
 
-        st.markdown(f"""
-            <a href="/" style="color:black;text-decoration: none;">
-                <div style="display:table;margin-left:0%;">
-                    <img src="app/static/logo.png" width="80"><span style="color: white">&nbsp;AIDDI</span>
-                    <span style="font-size: 0.8em; color: grey">&nbsp;&nbsp;v2026.06    </span>
-                </div>
-            </a>
-            <br>
-                """, unsafe_allow_html=True)
+        st.image("static/AIDDIlogopending.png", width=300)
+        st.markdown("v2026.07")
+        #st.markdown(f"""
+        #    <a href="/" style="color:black;text-decoration: none;">
+        #        <div style="display:table;margin-left:0%;">
+        #            <img src="app/static/logo.png" width="80"><span style="color: white">&nbsp;AIDDI</span>
+        #            <span style="font-size: 0.8em; color: grey">&nbsp;&nbsp;v2026.06    </span>
+        #        </div>
+        #    </a>
+        #    <br>
+        #        """, unsafe_allow_html=True)
 
         reload_button = st.button("↪︎  Reload Page")
         if reload_button:
@@ -141,4 +143,5 @@ def show() -> None:
 
         with st.container(key="llm_sidebar_bottom"):
             st.divider()
-            _render_llm_selector()
+            if st.session_state.logged_in:
+                _render_llm_selector()

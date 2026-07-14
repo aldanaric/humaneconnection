@@ -1,15 +1,97 @@
+#[theme]
+
+#primaryColor = '#0B46CB'
+
+#backgroundColor = '#060D29'
+
+#secondaryBackgroundColor = '#ADB5C7'
+
+#textColor = '#1263ED'
+
+#[theme.sidebar]
+
+#backgroundColor = '#4A4D5D'
+
+#textColor = '#092D89'
+
 [theme]
+base = "dark"
+# Core AIDDI identity
+primaryColor = "#1263ED"
 
-primaryColor = '#0B46CB'
+# Deep authority background
+backgroundColor = "#060D29"
 
-backgroundColor = '#E8E7EC'
+# Slightly elevated surfaces
+secondaryBackgroundColor = "#092D89"
 
-secondaryBackgroundColor = '#ADB5C7'
+# Main text
+textColor = "#FFFFFF"
 
-textColor = '#1263ED'
+# Font direction:
+# Streamlit supports these built-ins:
+# "sans serif", "serif", "monospace"
+# Use sans serif and style externally if using Montserrat/Inter/etc.
+font = "sans serif"
+
+[theme.dark]
+# Core AIDDI identity
+primaryColor = "#1263ED"
+
+# Deep authority background
+backgroundColor = "#060D29"
+
+# Slightly elevated surfaces
+secondaryBackgroundColor = "#092D89"
+
+# Main text
+textColor = "#FFFFFF"
+
+# Font direction:
+# Streamlit supports these built-ins:
+# "sans serif", "serif", "monospace"
+# Use sans serif and style externally if using Montserrat/Inter/etc.
+font = "sans serif"
+
+[theme.light]
+# AIDDI electric blue action color
+primaryColor = "#0B46CB"
+
+# Clean diagnostic workspace
+backgroundColor = "#E8E7EC"
+
+# Soft card surfaces
+secondaryBackgroundColor = "#ADB5C7"
+
+# Deep navy text
+textColor = "#060D29"
+
+font = "sans serif"
+
 
 [theme.sidebar]
 
-backgroundColor = '#4A4D5D'
+backgroundColor = "#092D89"
 
-textColor = '#092D89'
+[theme.dark.sidebar]
+
+backgroundColor = "#092D89"
+
+[theme.light.sidebar]
+
+backgroundColor = "#24AAF3"
+
+
+[client]
+
+showErrorDetails = "none"
+
+
+[server]
+
+headless = false
+
+
+[browser]
+
+gatherUsageStats = false
