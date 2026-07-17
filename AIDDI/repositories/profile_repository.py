@@ -15,8 +15,8 @@ class ProfileRepository:
 
     PROFILE_FILE = "profile.json"
 
-    def __init__(self):
-        self.root = Path("data/GrowthPlan/Profiles")
+    def __init__(self, root: Path):
+        self.root = root
         self.root.mkdir(parents=True, exist_ok=True)
 
     def create_profile(
@@ -227,6 +227,17 @@ class ProfileRepository:
 
         path = profile.root / document.filename
         return path.exists()
+
+    def list_profile_files(
+        self,
+        profile: Profile
+    ) -> list[str]:
+
+        return sorted(
+            path.stem
+            for path in profile.root.rglob("*")
+            if path.is_file() and path.name != self.PROFILE_FILE
+        )
 
     # Helper methods
 
