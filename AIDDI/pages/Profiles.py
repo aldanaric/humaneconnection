@@ -1,10 +1,15 @@
 import streamlit as st
 
 from repositories.profile_repository import ProfileRepository
+from repositories.account_repository import AccountRepository
 
 st.header("Profiles")
 
-repo = ProfileRepository()
+account = st.session_state.get("account")
+
+account_repo = AccountRepository()
+
+repo = ProfileRepository(account_repo.get_profiles_root(account))
 
 profiles = repo.list_profiles()
 
