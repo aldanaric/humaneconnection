@@ -18,9 +18,12 @@ logout_page = st.Page("pages/Log_out.py", title="Log out")
 chat_page = st.Page("pages/1_💬_Quick_Chat.py")
 growth_plan_page = st.Page("pages/2_Growth_Plan.py")
 knowledge_base_page = st.Page("pages/3_Knowledge_Base.py")
+rag_status_page = st.Page("pages/4_RAG_Status.py")
 
 if st.session_state.logged_in and st.session_state.admin:
-    pg = st.navigation([chat_page, growth_plan_page, knowledge_base_page, logout_page])
+    pg = st.navigation(
+        [chat_page, growth_plan_page, knowledge_base_page, rag_status_page, logout_page]
+    )
 elif st.session_state.logged_in:
     pg = st.navigation([chat_page, growth_plan_page, logout_page])
 else:

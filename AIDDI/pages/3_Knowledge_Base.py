@@ -5,7 +5,7 @@ import streamlit as st
 from ui.components import sidebar
 from services import rag_index_manager
 
-logo = Path(__file__).resolve().parent / "static" / "AIDDIlogopendingquare.png"
+logo = Path(__file__).resolve().parents[1] / "static" / "AIDDIlogopendingsquare.png"
 
 st.set_page_config(
     page_title="Knowledge Base",
@@ -58,20 +58,27 @@ if st.button(
     "Rebuild knowledge base now",
     type="primary",
     disabled=rebuild_disabled,
-    help="Re-extracts, re-chunks, and re-embeds every source document.",
+    help=(
+        "Re-extracts, re-chunks, and re-embeds every source document. Runs in "
+        "an isolated process so a build failure can't crash this app."
+    ),
 ):
     with st.spinner("Rebuilding knowledge base... this can take a minute."):
         try:
-            result = rag_index_manager.rebuild_index()
+            summary = rag_index_manager.rebuild_index_subprocess()
             st.success(
-                f"Rebuilt index: {result.chunks} chunks from "
-                f"{result.source_files_indexed} source documents."
+                f"Rebuilt index: {summary.get('chunks')} chunks from "
+                f"{summary.get('source_files_indexed')} source documents."
             )
             st.rerun()
         except rag_index_manager.RebuildLockError as exc:
             st.warning(str(exc))
+        except rag_index_manager.SubprocessRebuildError as exc:
+            st.error(str(exc))
         except Exception as exc:
             st.error(f"Rebuild failed: {exc}")
+
+st.page_link("pages/4_RAG_Status.py", label="View full RAG index status & change history", icon="📡")
 
 st.divider()
 

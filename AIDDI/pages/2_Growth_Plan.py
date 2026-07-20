@@ -13,7 +13,7 @@ from ui.components import growth_plan_inputs
 from ui.components import generate_growth_plan
 from ui.components import growth_plan_output
 
-logo = Path(__file__).resolve().parent / "static" / "AIDDIlogopendingquare.png"
+logo = Path(__file__).resolve().parents[1] / "static" / "AIDDIlogopendingsquare.png"
 
 st.set_page_config(
     page_title="Growth Plan",
