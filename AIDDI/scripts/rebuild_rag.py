@@ -33,7 +33,7 @@ def main() -> None:
     if args.status:
         status = rag_index_manager.get_status()
         if args.json:
-            print(json.dumps(status.as_dict(), indent=2))
+            print(json.dumps(status.as_dict()))
         else:
             print(f"State: {status.state}")
             print(status.message)
@@ -56,7 +56,7 @@ def main() -> None:
         "sparse_dimensions": result.sparse_dimensions,
     }
     if args.json:
-        print(json.dumps(summary, indent=2))
+        print(json.dumps(summary))
     else:
         print("RAG rebuild completed.")
         for key, value in summary.items():

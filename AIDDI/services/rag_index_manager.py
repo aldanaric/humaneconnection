@@ -4,6 +4,8 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import subprocess
+import sys
 import tempfile
 import time
 from dataclasses import asdict, dataclass, field
@@ -56,6 +58,13 @@ class IndexStatus:
 
 class RebuildLockError(RuntimeError):
     """Raised when another rebuild currently owns the lock."""
+
+
+class SubprocessRebuildError(RuntimeError):
+    """Raised when an isolated (subprocess) rebuild fails or times out."""
+
+
+REBUILD_SCRIPT = PROJECT_ROOT / "scripts" / "rebuild_rag.py"
 
 
 class RebuildLock:
@@ -336,6 +345,75 @@ def rebuild_index() -> rag_builder.BuildResult:
             # The promotion copies from temp_root, so always remove the
             # temporary build directory after success or failure.
             shutil.rmtree(temp_root, ignore_errors=True)
+
+
+def rebuild_index_subprocess(timeout: int | None = None) -> dict[str, Any]:
+    """Run a full rebuild in an isolated child process.
+
+    Embedding rebuilds (TF-IDF fit + TruncatedSVD) are CPU/memory intensive.
+    If something goes wrong in-process (e.g. the OS OOM-killer stepping in,
+    or a native BLAS/threading fault), that failure previously took the whole
+    Streamlit app down with it, since the build ran on the same process that
+    serves the UI. Running the build via `scripts/rebuild_rag.py` in its own
+    process means a crash there only ends that child process: this call
+    surfaces it as a normal, catchable error instead of killing the app.
+    """
+    if timeout is None:
+        timeout = int(os.getenv("RAG_REBUILD_TIMEOUT_SECONDS", "1800"))
+
+    if not REBUILD_SCRIPT.exists():
+        raise SubprocessRebuildError(f"Rebuild script not found at {REBUILD_SCRIPT}.")
+
+    env = os.environ.copy()
+    numeric_threads = env.get("RAG_NUMERIC_THREADS", "1").strip() or "1"
+    for thread_env in (
+        "OMP_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "MKL_NUM_THREADS",
+        "NUMEXPR_NUM_THREADS",
+        "VECLIB_MAXIMUM_THREADS",
+        "BLIS_NUM_THREADS",
+    ):
+        env[thread_env] = numeric_threads
+
+    try:
+        completed = subprocess.run(
+            [sys.executable, str(REBUILD_SCRIPT), "--json"],
+            cwd=str(PROJECT_ROOT),
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise SubprocessRebuildError(
+            f"Rebuild did not finish within {timeout} seconds and was stopped. "
+            "The knowledge base was left untouched; try again, or increase "
+            "RAG_REBUILD_TIMEOUT_SECONDS if this keeps happening."
+        ) from exc
+
+    if completed.returncode != 0:
+        stderr = completed.stderr.strip()
+        if "RebuildLockError" in stderr or "already running" in stderr:
+            raise RebuildLockError("A knowledge-base rebuild is already running.")
+        tail = "\n".join(stderr.splitlines()[-20:]) if stderr else completed.stdout[-2000:]
+        raise SubprocessRebuildError(
+            f"Rebuild process exited with an error (code {completed.returncode}). "
+            f"The previous knowledge base was left in place.\n\n{tail}"
+        )
+
+    output_lines = [line for line in completed.stdout.splitlines() if line.strip()]
+    if not output_lines:
+        raise SubprocessRebuildError(
+            "Rebuild process finished but produced no output to confirm success."
+        )
+    try:
+        return json.loads(output_lines[-1])
+    except json.JSONDecodeError as exc:
+        raise SubprocessRebuildError(
+            "Rebuild process finished but its output could not be parsed: "
+            f"{output_lines[-1][:2000]}"
+        ) from exc
 
 
 def maybe_auto_rebuild() -> IndexStatus:

@@ -31,16 +31,6 @@ elif account.access_level == AccessLevel.USER:
 else:
     pg = st.navigation([login_page])
 
-st.set_page_config(
-    page_title="AIDDI",
-    page_icon=icon,
-    layout="wide"
-)
-
 sidebar.render_sidebar()
 
 pg.run()
-
-
-
-
