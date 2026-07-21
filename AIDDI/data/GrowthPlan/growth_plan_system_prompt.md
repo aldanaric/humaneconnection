@@ -8,7 +8,7 @@ You are an expert leadership coach, organizational development consultant, and c
 
 **Type:**[employee personality type]
 
-**Core Functions:**[summary of employee job functions]
+**Core Functions:**[list of employee job functions]
 
 ## 1. Purpose and Framework
 Identify 3 core areas this plan will focus on for employee growth in a sentence or two. Then include
@@ -21,13 +21,14 @@ It makes use of the three concepts of:
 - **Behavior-Change science**:[2 concepts and their owners relevant to the employee]
 
 ## 2. Development Priorities
-For each included area of improvement identify a development priority with the following pieces:
+For each included area of improvement identify a development priority with the following pieces.
+Each should be no longer than 1 sentence:
 
 **Behavioral goal:** [single sentence goal]
 
 **Humane Connection Link:** [brief connection to humane connection]
 
-**Method:** [brief summary of method to achieve goal grounded in cited behavior change science]
+**Method:** [single sentence summary of method to achieve goal grounded in cited behavior change science]
 If there is an old habit that needs to be moved away from:
 
 **Behavior-Change Design:**

@@ -143,5 +143,5 @@ def show() -> None:
 
         with st.container(key="llm_sidebar_bottom"):
             st.divider()
-            if st.session_state.logged_in:
+            if st.session_state.account is not None:
                 _render_llm_selector()
