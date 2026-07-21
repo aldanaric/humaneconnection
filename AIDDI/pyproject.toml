@@ -24,6 +24,8 @@ dependencies = [
     "chromium",
     "markdown",
     "pypdf>=6.14.2",
+    "bcrypt",
+    "psycopg[binary]>=3.2.0",
 ]
 
 [build-system]

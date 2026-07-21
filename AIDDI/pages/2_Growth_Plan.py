@@ -13,7 +13,10 @@ from ui.components import growth_plan_inputs
 from ui.components import generate_growth_plan
 from ui.components import growth_plan_output
 
-logo = Path(__file__).resolve().parents[1] / "static" / "AIDDIlogopendingsquare.png"
+from models.account import Account
+from repositories.account_repository import AccountRepository
+
+logo = Path(__file__).resolve().parent / "static" / "AIDDIlogopendingsquare.png"
 
 st.set_page_config(
     page_title="Growth Plan",
@@ -25,7 +28,11 @@ st.header("Growth Plan")
 
 #sidebar.render_sidebar()
 
-repo = ProfileRepository()
+account = st.session_state.get("account")
+
+account_repo = AccountRepository()
+
+repo = ProfileRepository(account_repo.get_profiles_root(account))
 
 NO_GENERATED_PLAN = "No plan has been generated this session"
 
