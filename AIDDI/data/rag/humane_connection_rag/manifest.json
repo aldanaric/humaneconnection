@@ -1,0 +1,204 @@
+{
+  "bundle_name": "Humane Connection Managed RAG Index",
+  "schema_version": 2,
+  "index_method": "tfidf-lsa-hybrid-v2",
+  "created_at_utc": "2026-07-18T15:39:29+00:00",
+  "source_directory": "/home/claude/AIDDI/data/rag/source_documents",
+  "source_snapshot": [
+    {
+      "relative_path": "Analyst Personalities #U0393#U00c7#U00f4 Roles _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "e94aabefd78cc2a86c9c50d808bb6ae476610b7932f30ac33d9ceaeb6adb6970",
+      "size_bytes": 497180,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Assertive vs. Turbulent Personality Traits _ 16Personalities (1)(1).pdf",
+      "extension": "pdf",
+      "sha256": "f79deaaf130fefb3a6a5ba601e2d7c8477f9b1da3955df0237ea0edd6aadaec1",
+      "size_bytes": 386284,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Assertive vs. Turbulent Personality Traits _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "f79deaaf130fefb3a6a5ba601e2d7c8477f9b1da3955df0237ea0edd6aadaec1",
+      "size_bytes": 386284,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Confident Individualism Personalities #U0393#U00c7#U00f4 Strategies _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "174b61f9fbcd22227279d0c47d1492d880ac7d77703c8d388c2872c1c776e4ee",
+      "size_bytes": 533042,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Constant Improvement Personalities #U0393#U00c7#U00f4 Strategies _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "59fcaff3efc509c419b1bee47ba4178392e421a8f662ceb588d53e6fbb25bc46",
+      "size_bytes": 423381,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Diplomat Personalities #U0393#U00c7#U00f4 Roles _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "5adcf1f6d68542a3e51d16fa9ac932c87d6c0e073d567bdd60e94a3cc98f2386",
+      "size_bytes": 524029,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Explorer Personalities #U0393#U00c7#U00f4 Roles _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "9130342a2abbdf700a6431972ba082edbf06338688162c32e92d5a31065aad7b",
+      "size_bytes": 388875,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Our Framework _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "27d2a7ef9745b7c423cefb613f66758db21a191c5b1d403adedf8b4fd15c9530",
+      "size_bytes": 462742,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "People Mastery Personalities #U0393#U00c7#U00f4 Strategies _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "e86431495989ee38b08aeb4a08f42ee87be25633c2bc3d60dfb0fed888df045e",
+      "size_bytes": 529382,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Personality Roles Defined _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "aa6a570f9f8de8e46c370029abbe2dbe3f940f4690a5be38ec674d35e2b06f48",
+      "size_bytes": 469720,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Personality Strategies Defined _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "f90620ca5a6c9f35a9305afc73d08382553562db78595e46b3161af4a3790dbc",
+      "size_bytes": 317188,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Sentinel Personalities #U0393#U00c7#U00f4 Roles _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "286375ba6a1e15e51023a5d18c3c78d15fd6e69bf62494bfe9df88b5af5e88ab",
+      "size_bytes": 493799,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Social Engagement Personalities #U0393#U00c7#U00f4 Strategies _ 16Personalities(1).pdf",
+      "extension": "pdf",
+      "sha256": "f93a215a45223c57c026306e7081fcf5188157b66c9eee17993e995cc4784e9c",
+      "size_bytes": 527578,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "The Humane Connection System.docx",
+      "extension": "docx",
+      "sha256": "af54f3d1319493ae1be0a685c7a9c13b9820d569bd9129048d83f2b9423a8868",
+      "size_bytes": 24145,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Video 1 - The Performance Doctrine - Copy.docx",
+      "extension": "docx",
+      "sha256": "886af30e74a5fb2fe6eff2e3956527ace516a38e3b10252b36312304fbc1ac27",
+      "size_bytes": 43521,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Video 2 - Core Session Architecture and Structural Discipline.docx",
+      "extension": "docx",
+      "sha256": "7dacf05c49f050f6489861420f61a6dcab4f53addce52798d67fe4f5d8638007",
+      "size_bytes": 41925,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Video 3 - Observational Discipline and Real-Time Assessment.docx",
+      "extension": "docx",
+      "sha256": "390b1311ffde84759e80c1763c983b9f5e0c6c48a987647c50f93afa2780e501",
+      "size_bytes": 36776,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Video 4 - Diagnosis and Gap Classification.docx",
+      "extension": "docx",
+      "sha256": "305cc2c4e5628bae22469c9168f1301d780a102209f4a6f16f5fe55535bd3997",
+      "size_bytes": 77819,
+      "modified_ns": 1783998137000000000
+    },
+    {
+      "relative_path": "Video 7 - Risk, Escalation, Ethics, and Psychological Safety Boundaries.docx",
+      "extension": "docx",
+      "sha256": "4addb3bd41500a89e96b531ae794a52b86602ee4dd79d22f0789a3e7cddb6e70",
+      "size_bytes": 40743,
+      "modified_ns": 1783998137000000000
+    }
+  ],
+  "source_snapshot_fingerprint": "c1933b9567ae4b3287a6f31fae0044ecdc7dc6789e9ba1ba5023f43d2f0c33e2",
+  "build_config": {
+    "schema_version": 2,
+    "index_method": "tfidf-lsa-hybrid-v2",
+    "supported_extensions": [
+      ".docx",
+      ".md",
+      ".pdf",
+      ".txt"
+    ],
+    "chunking": {
+      "target_words": 220,
+      "max_words": 300,
+      "overlap_words": 40
+    },
+    "vectorizer": {
+      "analyzer": "word",
+      "ngram_range": [
+        1,
+        2
+      ],
+      "max_features": 10000,
+      "sublinear_tf": true,
+      "strip_accents": "unicode"
+    },
+    "dense": {
+      "method": "TruncatedSVD followed by L2 normalization",
+      "requested_dimensions": 128,
+      "random_state": 42
+    }
+  },
+  "build_config_fingerprint": "7f5fb8ae59b0f95f4cf1e5d0e2f3df43e220fd8fb1bf4392c1f18351466a95ba",
+  "source_files_seen": 19,
+  "source_files_indexed": 18,
+  "source_files_duplicate_skipped": 1,
+  "source_files_failed": 0,
+  "failed_sources": {},
+  "chunks": 153,
+  "dense_embedding_method": "TF-IDF word 1-2 grams followed by TruncatedSVD (LSA) and L2 normalization",
+  "dense_dimensions": 128,
+  "sparse_dimensions": 10000,
+  "retrieval_default": "hybrid cosine: 0.65 sparse TF-IDF + 0.35 dense LSA",
+  "validation": {
+    "chunk_vector_alignment": true,
+    "dense_vectors_finite": true,
+    "dense_norm_mean": 1.0,
+    "dense_norm_min": 0.9999998807907104,
+    "dense_norm_max": 1.0000001192092896
+  },
+  "created_files": [
+    "chunks.jsonl",
+    "metadata.csv",
+    "source_inventory.csv",
+    "embeddings.npy",
+    "tfidf_matrix.npz",
+    "tfidf_vectorizer.joblib",
+    "svd_model.joblib",
+    "rag_store.sqlite",
+    "manifest.json",
+    "README.md",
+    "checksums.sha256"
+  ]
+}
