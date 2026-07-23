@@ -1,30 +1,52 @@
 import streamlit as st
+from pypdf import PdfReader
 
-def render(selected_profile):
-    st.subheader("Inputs: 🔗")
+def extract_text(uploaded_file):
+    """Helper function to extract text based on file type."""
+    suffix = uploaded_file.name.split('.')[-1].lower()
     
+    if suffix == "pdf":
+        reader = PdfReader(uploaded_file)
+        pages = [page.extract_text() for page in reader.pages if page.extract_text()]
+        return "\n\n".join(pages)
+    else:
+        # Handles .md, .csv, and standard text files
+        return uploaded_file.getvalue().decode("utf-8")
+
+def render(selected_profile, repo):
+    st.subheader("Inputs: 🔗")
     st.markdown("#### 1. Client Intake Form")
     
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("**View and edit current intake data**")
-        # Text area to display previously uploaded or currently active text
-        st.text_area(
+        # FIX: Remove 'key' and capture the text box output into 'edited_intake'
+        edited_intake = st.text_area(
             label="Current Intake Data",
-            value="No intake data loaded yet. Upload a Microsoft Form export.",
+            value=st.session_state.get("intake_text", ""),
             height=300,
             label_visibility="collapsed"
         )
         
+        if st.button("Save Intake Form"):
+            # Update the session state manually from the variable
+            st.session_state.intake_text = edited_intake
+            st.success("Intake form saved successfully!")
+            
     with col2:
         st.markdown("**Upload replacement intake form**")
-        st.file_uploader(
+        uploaded_file = st.file_uploader(
             "Upload",
             type=["csv", "pdf", "md"],
             label_visibility="collapsed"
         )
-        st.button("Save Intake Form")
+        
+        if uploaded_file and st.button("Process Uploaded File"):
+            extracted_string = extract_text(uploaded_file)
+            # FIX: Only update the background session state, then rerun
+            st.session_state.intake_text = extracted_string
+            st.rerun() 
         
     st.divider()
     
@@ -33,13 +55,16 @@ def render(selected_profile):
     
     col3, col4 = st.columns(2)
     with col3:
-        st.text_area(
+        # FIX: Same pattern for the context box
+        edited_context = st.text_area(
             label="Analyst Context",
-            value="",
+            value=st.session_state.get("analyst_context", ""),
             height=150,
             placeholder="e.g., The client seemed highly defensive when discussing team alignment..."
         )
     with col4:
-        st.write("") # Spacing
+        st.write("") 
         st.write("")
-        st.button("Save Analyst Context")
+        if st.button("Save Analyst Context"):
+            st.session_state.analyst_context = edited_context
+            st.success("Analyst context saved!")

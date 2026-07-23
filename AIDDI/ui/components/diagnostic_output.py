@@ -1,6 +1,6 @@
 import streamlit as st
 
-def render(selected_profile):
+def render(selected_profile, repo):
     st.selectbox("Load Previous Diagnostic Summary", ["--None--", "Initial Intake Summary - July 2026"])
     
     st.text_input("Diagnostic Summary Name", value=f"{selected_profile} - Diagnostic Summary")
