@@ -22,4 +22,24 @@ if st.button("Log in"):
         st.error("Invalid username or password")
     st.rerun()
 
+if st.button("Create Account"):
+    with st.form("create_account_form"):
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        confirm_password = st.text_input("Confirm password", type="password")
+        if password != confirm_password:
+            st.error("Passwords do not match")
+        submitted = st.form_submit_button("Create Account")
+
+    if submitted:
+        try:
+            account_repo.create_account(
+                username,
+                password,
+                AccessLevel.READ_ONLY,
+            )
+        except ValueError as e:
+            st.error(str(e))
+        else:
+            st.success("Account created!")
 
