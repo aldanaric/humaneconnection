@@ -13,32 +13,36 @@ new_account_tab, current_account_tab = st.tabs(
 )
 
 with new_account_tab:
-    with st.form("create_account_form"):
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        confirm_password = st.text_input("Confirm password", type="password")
-        if password != confirm_password:
-            st.error("Passwords do not match")
 
-        access_level = st.selectbox(
-            "Access Level",
-            options=list(AccessLevel),
-            format_func=lambda level: level.value.replace("_", " ").title()
-        )
+    use_tab, empty_tab = st.columns([4, 1])
 
-        submitted = st.form_submit_button("Create Account")
+    with use_tab:
+        with st.form("create_account_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            confirm_password = st.text_input("Confirm password", type="password")
+            if password != confirm_password:
+                st.error("Passwords do not match")
 
-    if submitted:
-        try:
-            account_repo.create_account(
-                username,
-                password,
-                access_level,
+            access_level = st.selectbox(
+                "Access Level",
+                options=list(AccessLevel),
+                format_func=lambda level: level.value.replace("_", " ").title()
             )
-        except ValueError as e:
-            st.error(str(e))
-        else:
-            st.success("Account created!")
+
+            submitted = st.form_submit_button("Create Account")
+
+        if submitted:
+            try:
+                account_repo.create_account(
+                    username,
+                    password,
+                    access_level,
+                )
+            except ValueError as e:
+                st.error(str(e))
+            else:
+                st.success("Account created!")
 
 with current_account_tab:
 

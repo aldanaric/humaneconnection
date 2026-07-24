@@ -11,8 +11,11 @@ account_repo = AccountRepository()
 st.markdown("Welcome to AIDDI")
 st.write("AIDDI is designed to help you create high-performing teams.")
 
-username = st.text_input("Username")
-password = st.text_input("Password", type="password")
+use_col, empty_col = st.columns([4, 2])
+
+with use_col:
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
 
 if st.button("Log in"):
     account = account_repo.authenticate(username, password)
