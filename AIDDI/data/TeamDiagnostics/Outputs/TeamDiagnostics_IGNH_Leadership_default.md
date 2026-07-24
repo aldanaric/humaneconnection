@@ -1,285 +1,288 @@
+---  
 ## Team Dynamics Blueprint  
 
-**Evaluating IGNH_Leadership as a Team**
+### Evaluating IGNH_Leadership as a Team  
 
-### Personality Distribution  
-- **Diplomats**  
-  - **Dawn Ragsdale – ENFP‑A** (Assertive Campaigner) – 83 % Extraverted, Intuitive, Feeling, Prospecting, 71 % Assertive.  
-  - **Markeshia Ricks – ENFJ‑T** (Turbulent Protagonist) – 56 % Extraverted, Intuitive, Feeling, Judging, 51 % Turbulent.  
-- **Analysts**  
-  - **Christian Reyes – INTJ‑T** (Turbulent Architect) – 49 % Extraverted (51 % Introverted), 81 % Intuitive, 58 % Thinking, 65 % Judging, 69 % Turbulent.  
-- **Sentinels** – none  
-- **Explorers** – none  
+#### Personality Distribution  
+- **Analysts** – *INTJ‑T (Turbulent Architect)* **Christian Reyes** – strategic, logical, prefers autonomous, big‑picture problem solving.  
+- **Diplomats** – *ENFP‑A (Assertive Campaigner)* **Dawn Ragsdale** – enthusiastic connector, idea‑generator, people‑focused.  
+- **Diplomats** – *ENFJ‑T (Turbulent Protagonist)* **Markeshia Ricks** – inspirational leader, empathetic communicator, builds cohesion.  
 
-### Balance of Introverts vs. Extraverts  
-Two members (Dawn, Markeshia) lean strongly toward Extraversion, while Christian balances near the midpoint with a slight Introvert preference. The team’s energy tends to be outward‑directed, especially in brainstorming and relationship‑building moments, but Christian’s quieter presence can provide a grounding counter‑balance when the group needs focused analysis.
+*(No Sentinels or Explorers are present.)*  
 
-### Identity Traits: Assertive vs. Turbulent  
-- **Assertive:** Dawn (71 % Assertive) brings confidence and a steady sense of self‑direction, often stepping in to keep momentum.  
-- **Turbulent:** Christian (69 % Turbulent) and Markeshia (51 % Turbulent) are more sensitive to external feedback and may experience stress when expectations shift quickly. This mix yields a dynamic where bold ideas are proposed, yet the team is also attuned to nuance and improvement.
+#### Balance of Introverts vs. Extraverts  
+- **Extraverted:** Dawn (83 % Extraverted), Markeshia (56 % Extraverted) – they draw energy from interaction, often spark conversation and keep the group’s momentum.  
+- **Introverted:** Christian (51 % Introverted) – prefers focused, solitary work and recharges through quiet reflection.  
 
-### Communication Styles  
-- **Dawn:** Warm, story‑driven, and inspirational; prefers open dialogue and connecting ideas to people’s values.  
-- **Christian:** Direct, data‑focused, and concise; favors logical structure and minimal small talk.  
-- **Markeshia:** Empathetic, inclusive, and collaborative; often frames messages around shared purpose and team wellbeing.  
+**Implication:** The team leans toward outward energy, so quieter moments may need intentional space for Christian to contribute without feeling overrun.  
 
-### Strength Clusters  
+#### Identity Traits: Assertive vs. Tethered  
+- **Assertive:** Dawn (71 % Assertive) – self‑assured, handles setbacks with calm, tends to push ideas forward quickly.  
+- **Tethered (Turbulent):** Christian (69 % Turbulent) & Markeshia (51 % Turbulent) – highly attuned to stress signals, self‑critical, motivated to improve continuously.  
 
-**Leadership & Influence**  
-- Dawn’s natural charisma and Markeshia’s ability to rally groups make them effective vision carriers.  
+**Implication:** Expect a mix of steady confidence (Dawn) and heightened sensitivity (Christian, Markeshia). Decision‑making may feel swift when Dawn leads, but may also pause for reflection when the tethered members sense risk.  
 
-**Innovation**  
-- Christian’s strategic, big‑picture reasoning and Dawn’s creative ideation generate novel solutions.  
+#### Communication Styles  
+- **Dawn (ENFP‑A):** Story‑telling, energetic, uses vivid language, seeks emotional resonance.  
+- **Christian (INTJ‑T):** Direct, data‑driven, prefers concise briefs, values logical precision.  
+- **Markeshia (ENFJ‑T):** Warm, inclusive, often frames points around shared values and team impact.  
 
-**Support & Collaboration**  
-- Markeshia’s empathetic listening and Dawn’s talent for building connections create a supportive climate for shared work.  
+**Team pattern:** A dynamic blend of big‑picture enthusiasm, analytical clarity, and relational framing.  
 
-### Conflict Styles  
-- **Dawn:** Tends to avoid confrontation to preserve harmony; may withdraw when criticism feels personal.  
-- **Christian:** Meets conflict head‑on with blunt feedback; can appear dismissive of feelings.  
-- **Markeshia:** Seeks consensus and may postpone difficult talks to keep peace; may feel overwhelmed if tension persists.  
+#### Strength Clusters  
+- **Leadership & Influence** – Markeshia’s ability to inspire and align; Dawn’s natural charisma.  
+- **Innovation** – Christian’s strategic foresight; Dawn’s idea generation.  
+- **Support & Collaboration** – Markeshia’s empathy; Dawn’s connective networking; Christian’s reliable follow‑through when tasks are clearly defined.  
 
-### Potential Growth Edges  
-- **Balancing enthusiasm with execution** – Dawn’s ideas can outpace follow‑through, while Christian may struggle to delegate.  
-- **Navigating feedback** – Christian’s directness and Dawn’s sensitivity could clash; Markeshia’s desire for harmony may mask underlying disagreements.  
-- **Integrating practical detail** – The team’s strong intuitive orientation may overlook necessary operational steps, requiring deliberate attention to process.  
+#### Conflict Styles  
+- **Dawn:** Tends to avoid conflict to preserve harmony; may defer confrontation.  
+- **Christian:** Direct, may deliver blunt feedback; can become impatient with perceived inefficiency.  
+- **Markeshia:** Seeks consensus, may suppress own concerns to keep peace; looks for win‑win outcomes.  
 
-### For the ED to Consider  
-- **Intuitive (N) predominance**: All three members favor intuition, driving vision and possibilities. Pairing this strength with occasional “ground‑truth” checks (e.g., schedule brief reality‑verification points) can safeguard against drift.  
-- **Turbulent majority**: Two Turbulent members suggest the team feels pressure from external expectations. Providing clear criteria for success and celebrating incremental wins can reduce stress spikes.  
-- **Extravert/Introvert balance**: While the louder voices will naturally dominate meetings, creating structured turn‑taking or “silent brainstorming” moments ensures Christian’s insights surface.  
-- **Feeling vs. Thinking**: The blend of Feeling (Dawn, Markeshia) and Thinking (Christian) offers both relational and analytical lenses. Guard against “emotional overload” by setting boundaries for venting and, conversely, guard against “hard‑truth avoidance” by encouraging respectful data‑driven discussion.  
+#### Potential Growth Edges  
+- **Stress triggers:** Rigid structure (Dawn), emotional criticism (Christian, Markeshia), routine micromanagement (Christian).  
+- **Delegation gaps:** Both Dawn and Markeshia report reluctance to delegate; Christian resists handing off tasks.  
+- **Ideal‑vs‑Practical tension:** Dawn’s enthusiasm can outpace practical details; Markeshia’s perfectionism may stall progress; Christian’s focus on logic can overlook relational nuances.  
 
----
+#### For the ED to Consider  
+- **Intuitive dominance:** All three types are Intuitive, driving visionary thinking but risking neglect of concrete operational checks.  
+- **Tethered prevalence:** Two out of three are Turbulent; anticipate heightened emotional reactivity during high‑pressure phases and the need for supportive feedback loops.  
+- **Extravert/Introvert balance:** The louder voices (Dawn, Markeshia) naturally dominate meetings; create intentional pauses for Christian’s reflective contributions.  
+- **Feeling vs. Thinking:** The team leans toward Feeling (Dawn, Markeshia) with one Thinking (Christian). Monitor for moments when emotional harmony overshadows critical analysis, and conversely when blunt logic may feel dismissive.  
+
+---  
 
 ## At Your Best / Under Stress — Dawn Ragsdale  
 
-**ENFP‑A (Assertive Campaigner)**  
+You shine when you’re surrounded by fresh ideas and people who share your excitement. As an **ENFP‑A Assertive Campaigner**, you naturally lift the group’s spirit, weaving purpose into every conversation. Your energy is most vibrant when you can move between creative brainstorming and genuine connection.  
 
-When you are thriving, you radiate enthusiasm that lifts the whole team, turning abstract concepts into compelling stories. Your natural curiosity drives you to explore many possibilities, and you connect people around a shared purpose. In this state, you move fluidly between ideas and relationships, creating momentum that others want to follow.  
+**Ideal working environment** – A space that offers variety, open‑ended projects, and visible impact. You thrive when you can collaborate with diverse personalities, see the heart of a mission, and have the freedom to shape the narrative without restrictive checklists.  
 
-**Ideal Working Environment**  
-You flourish when you have creative freedom, diverse stimuli, and the ability to interact frequently with colleagues. A space that celebrates open brainstorming, offers varied tasks, and acknowledges emotional resonance lets you bring your best. Minimal rigid structures and the presence of supportive feedback keep your energy high.  
-
-*Please remember that results from the 16 Personalities test may not fully apply to you, as many other factors such as background, context, and personal experiences also play a significant role.*
+Please remember that results from the 16 Personalities test may not fully apply to you, as many other factors such as background, context, and personal experiences also play a significant role.  
 
 ### You at Your Best (Thriving at Work)  
-- You spark enthusiasm in teammates with vivid, purpose‑driven narratives.  
-- You generate a steady flow of fresh ideas that expand the team’s horizon.  
-- You build authentic connections that make collaboration feel natural.  
-- You adapt quickly when priorities shift, keeping morale high.  
-- You champion inclusive dialogue, ensuring all voices feel heard.  
-- You turn abstract concepts into relatable, action‑able plans.  
-- You celebrate milestones publicly, reinforcing collective motivation.  
+- You generate a flood of original ideas that inspire teammates.  
+- You build bridges quickly, making newcomers feel welcomed.  
+- You communicate with authenticity, turning abstract concepts into compelling stories.  
+- You stay adaptable, pivoting when new information emerges.  
+- You motivate others by tying tasks to a larger purpose.  
+- You remain resilient, bouncing back from setbacks with optimism.  
+- You champion inclusive dialogue, ensuring every voice is heard.  
 
 ### You Under Stress (Challenged at Work)  
 - You become scattered, jumping between projects without finishing.  
-- You overcommit, taking on more than you can realistically deliver.  
-- You avoid conflict, letting tension linger to preserve peace.  
-- You feel overly sensitive to criticism, taking feedback personally.  
-- You lose focus on details, overlooking practical steps needed for implementation.  
-- You withdraw from collaboration if the environment feels too rigid.  
-- You may rely on optimism alone, neglecting necessary risk assessment.  
+- You overcommit, taking on more than you can realistically manage.  
+- You feel hypersensitive to criticism, even though you’re assertive.  
+- You avoid necessary conflict, preferring to keep the surface calm.  
+- You overlook practical details while chasing the next big idea.  
+- You may disengage when structures feel overly rigid.  
+- You let self‑doubt creep in, questioning the value of your contributions.  
 
----
+---  
 
 ## At Your Best / Under Stress — Christian Reyes  
 
-**INTJ‑T (Turbulent Architect)**  
+When you’re in flow, you operate as a **INTJ‑T Turbulent Architect**—quietly confident, relentlessly strategic, and deeply committed to excellence. Your capacity to see the long‑term architecture of a problem sets the direction for the whole team. You excel when given autonomy and clear goals, turning complex challenges into actionable roadmaps.  
 
-When you are at your best, you see patterns that others miss and craft long‑term strategies with precision. Your analytical rigor produces clear roadmaps, and your independence lets you dive deep into complex problems. You bring a calm, logical presence that steadies the team during uncertainty.  
+**Ideal working environment** – A setting that respects focused, uninterrupted time and offers strategic freedom. You perform best with clear objectives, access to data, and the latitude to design solutions without excessive social interruptions.  
 
-**Ideal Working Environment**  
-You thrive in settings that grant autonomy, provide clear goals, and respect your need for focused concentration. Access to challenging problems, data, and the freedom to design efficient processes keeps you engaged. Minimal social interruptions and transparent expectations reduce friction.  
-
-*Please remember that results from the 16 Personalities test may not fully apply to you, as many other factors such as background, context, and personal experiences also play a significant role.*
+Please remember that results from the 16 Personalities test may not fully apply to you, as many other factors such as background, context, and personal experiences also play a significant role.  
 
 ### You at Your Best (Thriving at Work)  
-- You envision innovative solutions that anticipate future challenges.  
-- You design structured plans that translate vision into concrete steps.  
-- You evaluate options objectively, keeping personal bias in check.  
-- You work autonomously, delivering high‑quality results without supervision.  
-- You mentor others by modeling disciplined problem‑solving.  
-- You maintain focus on long‑term objectives, even amid short‑term pressures.  
-- You identify inefficiencies and streamline processes for maximum impact.  
+- You dissect problems to uncover elegant, long‑term solutions.  
+- You set clear, structured plans that guide the team toward milestones.  
+- You trust your own judgment and act decisively when needed.  
+- You continuously seek improvement, iterating on processes.  
+- You maintain high standards, delivering work that exceeds expectations.  
+- You mentor quietly, modeling disciplined thinking for others.  
+- You stay composed under pressure, viewing setbacks as data points.  
 
 ### You Under Stress (Challenged at Work)  
-- You become overly blunt, delivering feedback without cushioning.  
-- You resist delegating, trying to control every detail yourself.  
-- You withdraw socially, ignoring team dynamics that affect morale.  
-- You feel impatient with routine tasks that do not challenge you.  
-- You become critical of others’ work, perceiving it as a threat to standards.  
-- You experience self‑doubt, questioning whether your ideas are valued.  
-- You may become rigid, insisting on a single “right” solution.  
+- You become overly critical, delivering feedback that feels blunt.  
+- You withdraw from collaboration, preferring solo work even when teamwork is needed.  
+- You resist delegating, fearing loss of quality control.  
+- You become impatient with routine tasks you deem unchallenging.  
+- You feel unsettled by emotional drama or small‑talk distractions.  
+- You may over‑analyze past decisions, doubting earlier judgments.  
+- You experience stress spikes when progress stalls or goals become vague.  
 
----
+---  
 
 ## At Your Best / Under Stress — Markeshia Ricks  
 
-**ENFJ‑T (Turbulent Protagonist)**  
+At your peak, you embody the **ENFJ‑T Turbulent Protagonist**—charismatic, empathetic, and purpose‑driven. You naturally rally people around shared values and create a sense of belonging that fuels collective performance. Your ability to read the room and adjust your approach keeps the team aligned and motivated.  
 
-When you are thriving, you act as the connective tissue that aligns people around a common purpose. Your empathy fuels an inclusive atmosphere, and you readily step into leadership to guide the group toward shared goals. You balance creativity with a strong sense of responsibility to the team’s well‑being.  
+**Ideal working environment** – A collaborative arena where recognition is visible, relationships matter, and the mission feels personally meaningful. You flourish when you can co‑create with others, receive constructive feedback, and see the positive impact of your leadership.  
 
-**Ideal Working Environment**  
-You excel when collaboration is intentional, recognition is frequent, and the purpose of work is clear. Spaces that encourage open dialogue, celebrate contributions, and allow you to mentor others keep you energized. Structured yet flexible timelines help you manage both relational and practical demands.  
-
-*Please remember that results from the 16 Personalities test may not fully apply to you, as many other factors such as background, context, and personal experiences also play a significant role.*
+Please remember that results from the 16 Personalities test may not fully apply to you, as many other factors such as background, context, and personal experiences also play a significant role.  
 
 ### You at Your Best (Thriving at Work)  
-- You inspire teammates with a clear, purpose‑driven vision.  
-- You create inclusive discussions where every voice feels valued.  
-- You anticipate and address team morale before issues arise.  
-- You adapt creatively to obstacles, finding win‑win solutions.  
-- You recognize and celebrate individual and group achievements.  
-- You coordinate resources efficiently, keeping projects on track.  
-- You mentor others, fostering growth and confidence.  
+- You inspire teammates with a clear, uplifting vision.  
+- You foster inclusive dialogue, ensuring everyone feels heard.  
+- You adjust communication style to match each person’s needs.  
+- You create structures that support both creativity and accountability.  
+- You recognize and celebrate achievements promptly.  
+- You navigate conflict with empathy, turning tension into growth.  
+- You balance flexibility with purposeful direction.  
 
 ### You Under Stress (Challenged at Work)  
-- You become overly sensitive to criticism, taking it as personal rejection.  
-- You avoid necessary conflict, allowing tension to fester.  
-- You overinvest emotionally, neglecting your own limits.  
-- You struggle to delegate, fearing loss of quality or control.  
-- You may become perfectionistic, stalling progress for ideal outcomes.  
-- You feel drained when feedback is negative or when you sense undervaluation.  
-- You can lose clarity on practical details while focusing on relational harmony.  
+- You become overly self‑critical, fearing you’re not meeting standards.  
+- You avoid confronting conflict, letting unresolved issues linger.  
+- You take on too much emotional labor, risking burnout.  
+- You hesitate to delegate, fearing loss of quality or cohesion.  
+- You feel drained when feedback is negative or when you feel unappreciated.  
+- You may over‑plan, seeking perfection instead of progress.  
+- You become hypersensitive to group mood swings, absorbing tension.  
 
----
+---  
 
 ## Coaching Cards — Dawn Ragsdale  
 
-**Type:** ENFP‑A (Assertive Campaigner)  
+**Type:** ENFP‑A Assertive Campaigner  
 
-### Pattern 1: Idea Generator  
-**Talking point:** You have a remarkable gift for sparking fresh concepts that energize the group. **The pattern I see is** that you sometimes launch many initiatives without anchoring them in a concrete plan, which can leave projects unfinished.  
-**Reflection question:** How might you choose one or two ideas to develop fully before moving to the next?  
+### Pattern 1: Idea‑First Energy  
+**Talking point:** You bring an inspiring spark that lights up the room. **The pattern I see is** you sometimes jump into the next idea before the current one has landed.  
 
-### Pattern 2: People‑First Connector  
-**Talking point:** Your ability to forge authentic relationships makes collaboration feel natural. **The pattern I see is** a tendency to prioritize harmony over addressing uncomfortable issues that need resolution.  
-**Reflection question:** In what ways could you create a safe space for honest feedback without losing the supportive vibe?  
+**Reflection question:** How might you create a simple “landing pad” step that honors the excitement while ensuring completion?  
 
-### Pattern 3: Energy‑Driven Adaptability  
-**Talking point:** You respond to change with enthusiasm, keeping the team nimble. **The pattern I see is** that rapid shifts can sometimes overwhelm you, causing you to lose focus on longer‑term milestones.  
-**Reflection question:** What simple routine could help you maintain momentum while checking progress regularly?  
+### Pattern 2: People‑Centric Connector  
+**Talking point:** You naturally make people feel seen and valued. **The pattern I see is** you may sideline practical details while nurturing relationships.  
 
-### Pattern 4: Sensitivity to Critique  
-**Talking point:** Your openness to others’ feelings builds trust. **The pattern I see is** that even brief negative comments can feel personally discouraging, affecting confidence.  
-**Reflection question:** How can you separate constructive input about work from personal worth, especially when feedback is brief?  
+**Reflection question:** In what ways can you weave a brief check‑in on logistics into your natural conversations?  
 
-### Pattern 5: Overcommitment  
-**Talking point:** You love taking on exciting opportunities, which spreads enthusiasm. **The pattern I see is** that you sometimes stretch yourself too thin, risking burnout.  
-**Reflection question:** What criteria could you apply before saying “yes” to a new project to protect your bandwidth?  
+### Pattern 3: Conflict Avoidance for Harmony  
+**Talking point:** You keep the group’s atmosphere positive and collaborative. **The pattern I see is** you tend to postpone necessary tough talks.  
 
----
+**Reflection question:** What small, respectful cue could signal that a constructive conflict is welcome to you?  
+
+### Pattern 4: Overcommitment Momentum  
+**Talking point:** Your enthusiasm drives you to take on diverse opportunities. **The pattern I see is** you sometimes stretch yourself thin, losing focus.  
+
+**Reflection question:** How could you decide on a “maximum active projects” rule that protects your energy?  
+
+### Pattern 5: Sensitivity to Critique Despite Assertiveness  
+**Talking point:** You confidently share your vision and receive applause. **The pattern I see is** criticism can feel disproportionately draining.  
+
+**Reflection question:** What internal language can you use to separate feedback about the idea from feedback about you?  
+
+---  
 
 ## Coaching Cards — Christian Reyes  
 
-**Type:** INTJ‑T (Turbulent Architect)  
+**Type:** INTJ‑T Turbulent Architect  
 
-### Pattern 1: Strategic Visionary  
-**Talking point:** You excel at seeing the big picture and crafting detailed roadmaps. **The pattern I see is** that you may overlook the human side of implementation, assuming logical appeal alone will motivate others.  
-**Reflection question:** How could you incorporate teammates’ perspectives to enhance buy‑in for your plans?  
+### Pattern 1: Strategic Depth  
+**Talking point:** Your ability to map out complex systems is a clear advantage. **The pattern I see is** you may become overly absorbed in the model, overlooking immediate human factors.  
 
-### Pattern 2: Autonomous Performer  
-**Talking point:** Your capacity to work independently yields high‑quality output. **The pattern I see is** a reluctance to delegate, which can bottleneck progress and increase personal load.  
-**Reflection question:** What small task could you hand off today to test the benefits of delegation?  
+**Reflection question:** How might you invite a quick “people impact” check at key planning milestones?  
 
-### Pattern 3: Direct Communicator  
-**Talking point:** Your straightforward feedback clarifies expectations quickly. **The pattern I see is** that bluntness sometimes creates friction or discourages collaboration.  
-**Reflection question:** How might you frame critical observations to preserve relationships while maintaining clarity?  
+### Pattern 2: Reluctance to Delegate  
+**Talking point:** You take pride in delivering high‑quality results. **The pattern I see is** you sometimes hold onto tasks, limiting team capacity.  
 
-### Pattern 4: Sensitivity to Inefficiency  
-**Talking point:** You have a keen eye for waste and a drive to improve systems. **The pattern I see is** that when processes feel inefficient, you become impatient, which can affect morale.  
-**Reflection question:** What steps can you take to channel that impatience into constructive change initiatives?  
+**Reflection question:** What would be the first task you could hand off to empower a teammate while maintaining oversight?  
 
-### Pattern 5: Turbulent Self‑Critique  
-**Talking point:** Your high standards push you toward excellence. **The pattern I see is** that self‑doubt can surface under pressure, leading you to question the value of your contributions.  
-**Reflection question:** Which recent achievement can you acknowledge as evidence of your impact?  
+### Pattern 3: Blunt Feedback Style  
+**Talking point:** Your honesty keeps standards high. **The pattern I see is** the delivery can feel abrupt to others.  
 
----
+**Reflection question:** What framing technique could you experiment with to pair factual feedback with a supportive tone?  
+
+### Pattern 4: Discomfort with Social Dynamics  
+**Talking point:** You excel when focusing on logical problems. **The pattern I see is** you may miss subtle group cues that affect collaboration.  
+
+**Reflection question:** How could a brief “pulse check” with a colleague help you gauge the team’s emotional climate?  
+
+### Pattern 5: Turbulent Self‑Scrutiny  
+**Talking point:** Your drive for improvement fuels growth. **The pattern I see is** you sometimes ruminate on past decisions, creating self‑doubt.  
+
+**Reflection question:** What evidence‑based “win‑log” could you keep to remind yourself of successes during stressful periods?  
+
+---  
 
 ## Coaching Cards — Markeshia Ricks  
 
-**Type:** ENFJ‑T (Turbulent Protagonist)  
+**Type:** ENFJ‑T Turbulent Protagonist  
 
-### Pattern 1: Empowering Leader  
-**Talking point:** You naturally bring out the best in others, fostering a cohesive team spirit. **The pattern I see is** a tendency to take on too much emotional labor, which can leave you depleted.  
-**Reflection question:** How can you share the responsibility of team wellbeing with another colleague?  
+### Pattern 1: Inspirational Leadership  
+**Talking point:** You naturally rally people around a shared purpose. **The pattern I see is** you may stretch yourself thin trying to meet everyone’s needs.  
 
-### Pattern 2: Consensus Builder  
-**Talking point:** Your skill at creating agreement ensures smooth collaboration. **The pattern I see is** that you sometimes sidestep necessary conflict, allowing underlying issues to linger.  
-**Reflection question:** What small, respectful disagreement could you initiate to address a hidden tension?  
+**Reflection question:** How can you set clear boundaries while still fostering a sense of belonging?  
 
-### Pattern 3: Detail‑Aware Idealist  
-**Talking point:** You combine creativity with a drive for high‑quality results. **The pattern I see is** that perfectionistic tendencies may stall progress when you wait for everything to feel “just right.”  
-**Reflection question:** What minimal viable outcome would let you move forward without compromising core standards?  
+### Pattern 2: Empathic Conflict Avoidance  
+**Talking point:** You keep the team’s harmony intact. **The pattern I see is** you sometimes delay addressing tension.  
 
-### Pattern 4: Sensitive to Criticism  
-**Talking point:** Your receptiveness to feedback helps you grow. **The pattern I see is** that negative comments can feel overwhelming, impacting confidence.  
-**Reflection question:** How might you create a personal buffer to process criticism before responding?  
+**Reflection question:** What small “pause & probe” technique could you use to surface concerns early?  
 
-### Pattern 5: Relational Over‑Investing  
-**Talking point:** You invest deeply in relationships, making teammates feel valued. **The pattern I see is** that you may overextend yourself, neglecting your own limits.  
-**Reflection question:** What boundary could you set this week to protect your energy while still supporting the team?  
+### Pattern 3: Perfectionistic Tendencies  
+**Talking point:** Your attention to detail raises the team’s quality. **The pattern I see is** you can become stalled by fearing imperfect outcomes.  
 
----
+**Reflection question:** How might you define a “good‑enough” threshold that still aligns with your standards?  
 
-## Pair Discussion Guide — Dawn × Christian  
+### Pattern 4: Reluctance to Delegate  
+**Talking point:** You trust your own ability to deliver. **The pattern I see is** you may hesitate to assign responsibilities, limiting collective growth.  
 
-**Working Together:** Dawn’s big‑picture enthusiasm meets Christian’s analytical depth, offering a blend of vision and structured execution.  
+**Reflection question:** Which upcoming initiative could serve as a development opportunity for a teammate you could entrust?  
 
-### Complementary Strengths  
-- Dawn’s inspirational storytelling can translate Christian’s strategic plans into compelling narratives for stakeholders.  
-- Christian’s logical rigor can help Dawn focus ideas into actionable steps.  
-- Both value innovation, so they can co‑create forward‑thinking solutions.  
-- Dawn’s network‑building complements Christian’s preference for focused, independent work, expanding outreach opportunities.  
+### Pattern 5: Sensitivity to Criticism  
+**Talking point:** You value feedback as a growth tool. **The pattern I see is** negative comments can feel personally destabilizing.  
 
-### Potential Friction & Best Interaction Strategies  
-- **Communication:** Dawn’s open, emotive style may feel excessive to Christian; suggest brief “idea‑pitch” sessions followed by structured debriefs.  
-- **Decision‑Making:** Christian may appear blunt, which can discourage Dawn; encourage Christian to pair critical feedback with a positive “what’s working” note.  
-- **Conflict:** Dawn may avoid tension; Christian may confront directly. Agree on a neutral “check‑in” protocol where concerns are raised calmly, perhaps using a written note first.  
-- **Delegation:** Christian’s reluctance to delegate clashes with Dawn’s tendency to start many projects. Create a clear task‑ownership board that outlines who leads each initiative.  
+**Reflection question:** What internal reminder can you use to view criticism as data about the work, not a judgment of you?  
 
-### Discussion Point  
-“Dawn, you often generate exciting possibilities, while Christian, you prefer to drill into the data behind those ideas. How can you design a joint process that captures Dawn’s enthusiasm early but still gives Christian the analytical space he needs before moving forward?”  
+---  
 
----
+## Pair Discussion Guide — Dawn Ragsdale × Christian Reyes  
 
-## Pair Discussion Guide — Dawn × Markeshia  
-
-**Working Together:** Both are outward‑focused, people‑centric diplomats who can co‑create a vibrant, purpose‑driven team culture.  
+Dawn’s big‑picture enthusiasm meets Christian’s strategic precision, offering a blend of creative vision and disciplined execution.  
 
 ### Complementary Strengths  
-- Dawn’s creative spark pairs with Markeshia’s ability to structure collaborative efforts.  
-- Both excel at building relationships, which can produce a highly inclusive environment.  
-- Dawn’s adaptability balances Markeshia’s tendency toward perfectionism, keeping projects moving.  
-- Their shared intuition helps them anticipate emerging trends and align the team’s mission.  
+- Dawn can translate abstract concepts into engaging narratives that motivate the team.  
+- Christian can structure those ideas into realistic timelines and measurable milestones.  
+- Both value autonomy and can respect each other’s need for independent work periods.  
+- Dawn’s people‑focus can surface stakeholder insights that enrich Christian’s models.  
 
 ### Potential Friction & Best Interaction Strategies  
-- **Conflict Avoidance:** Both may shy away from hard conversations. Set a “regular truth‑check” meeting where each can voice concerns in a safe, timed format.  
-- **Over‑Investing:** Emotional energy can be high; schedule brief individual recharge moments to prevent burnout.  
-- **Decision Pace:** Dawn may jump quickly between ideas, while Markeshia seeks consensus; adopt a “two‑step” approach—first brainstorm freely, then narrow choices together.  
-- **Feedback Sensitivity:** Both are sensitive to criticism; use “sandwich” feedback (strength, growth, strength) to keep morale high.  
+- **Communication:** Dawn’s lively storytelling may feel unfocused to Christian; Christian’s concise briefs may seem cold to Dawn. *Strategy:* Begin joint discussions with a quick “vision statement” (Dawn) followed by a “key deliverables outline” (Christian).  
+- **Decision‑making:** Dawn may push for rapid ideation, while Christian wants thorough analysis. *Strategy:* Agree on a “prototype‑first” agreement: test ideas quickly, then let Christian apply deeper analysis.  
+- **Conflict:** Dawn avoids direct confrontation; Christian may bluntly point out flaws. *Strategy:* Set a “feedback contract” where Christian frames critiques with positive intent, and Dawn signals when she needs a moment to process.  
 
 ### Discussion Point  
-“Markeshia, you often ensure every voice feels heard, while Dawn, you bring fresh concepts that jump‑start conversation. How can you blend your inclusive approach with Dawn’s rapid ideation so that ideas are both generated and refined together?”  
+“Dawn, you tend to generate a cascade of ideas that spark excitement, while Christian, you prefer to slow down and dissect each one for feasibility. How can you create a collaborative rhythm that honors both the spark and the structure?”  
 
----
+---  
 
-## Pair Discussion Guide — Christian × Markeshia  
+## Pair Discussion Guide — Dawn Ragsdale × Markeshia Ricks  
 
-**Working Together:** Christian’s analytical precision complements Markeshia’s empathetic leadership, offering a balance of logic and people‑focus.  
+Both are outward‑focused diplomats, combining Dawn’s inventive energy with Markeshia’s inclusive leadership.  
 
 ### Complementary Strengths  
-- Christian’s strategic frameworks give structure to Markeshia’s inclusive initiatives.  
-- Markeshia’s relational insight helps Christian consider team dynamics when implementing plans.  
-- Both value long‑term impact, enabling joint projects that are both effective and meaningful.  
-- Christian’s independent work style frees Markeshia to focus on group cohesion.  
+- Dawn fuels the group with fresh concepts; Markeshia turns those concepts into shared missions.  
+- Their mutual empathy creates a safe space for team members to voice concerns.  
+- Together they can champion both creativity (Dawn) and cohesive execution (Markeshia).  
+- Both excel at building relationships, making stakeholder buy‑in smoother.  
 
 ### Potential Friction & Best Interaction Strategies  
-- **Feedback Style:** Christian’s bluntness can unsettle Markeshia; encourage Christian to preface critiques with a positive observation.  
-- **Delegation:** Markeshia may hesitate to delegate, while Christian prefers control; agree on clear responsibility charts and trust checkpoints.  
-- **Emotional Load:** Markeshia’s sensitivity may amplify stress from Christian’s high standards; schedule short debriefs to process emotions separately from task discussions.  
-- **Decision Rhythm:** Christian likes to finalize quickly; Markeshia seeks consensus. Use a “decision buffer” where proposals are first reviewed analytically (Christian) then discussed for team impact (Markeshia).  
+- **Conflict avoidance:** Both may sidestep tension, risking unresolved issues. *Strategy:* Agree to a “check‑in cadence” where they each raise one concern per week, framing it as a growth opportunity.  
+- **Delegation:** Dawn may overextend, Markeshia may hold onto tasks to maintain harmony. *Strategy:* Co‑create a “task‑ownership board” that clarifies who owns what, reducing overlap.  
+- **Decision style:** Dawn prefers spontaneity; Markeshia leans toward consensus planning. *Strategy:* Use a two‑step process: quick idea burst (Dawn) → brief alignment meeting (Markeshia) before finalizing.  
 
 ### Discussion Point  
-“Christian, you tend to focus on efficient solutions, while Markeshia, you prioritize team harmony. How can you create a decision‑making rhythm that respects both the need for swift, logical outcomes and the desire for collective agreement?”  
+“Dawn, you thrive on spontaneous inspiration, while Markeshia, you gravitate toward consensus‑driven planning. How can you design a workflow that captures the spark first and then channels it through a collaborative decision‑making step?”  
+
+---  
+
+## Pair Discussion Guide — Christian Reyes × Markeshia Ricks  
+
+Christian’s analytical rigor meets Markeshia’s people‑centric leadership, offering a partnership that can balance logic with empathy.  
+
+### Complementary Strengths  
+- Christian provides data‑backed strategies; Markeshia translates those strategies into motivating narratives for the team.  
+- Markeshia’s sensitivity can surface emotional factors that Christian might overlook, enriching his models.  
+- Both appreciate purposeful work and can jointly set high standards for impact.  
+- Their combined focus on long‑term vision (Christian) and shared values (Markeshia) can steer the team toward sustainable success.  
+
+### Potential Friction & Best Interaction Strategies  
+- **Feedback style:** Christian’s bluntness may feel harsh to Markeshia; Markeshia’s gentle framing may dilute urgency for Christian. *Strategy:* Use a “feedback sandwich” format: start with appreciation, insert constructive point, end with collaborative next step.  
+- **Delegation:** Both prefer to keep control of key tasks. *Strategy:* Identify a “pilot project” where each can intentionally hand off a component, practicing trust.  
+- **Conflict handling:** Markeshia may defer conflict; Christian may confront directly. *Strategy:* Agree on a “pause‑then‑address” rule: when tension arises, take a brief pause, then reconvene with a shared purpose statement.  
+
+### Discussion Point  
+“Christian, you often dive straight into logical analysis, while Markeshia, you prioritize relationship harmony before tackling tough issues. How can you co‑create a process that respects both rigorous evaluation and emotional safety?”  

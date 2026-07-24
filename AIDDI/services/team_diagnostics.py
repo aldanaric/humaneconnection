@@ -228,24 +228,47 @@ Only generate the outputs listed above. Use the exact headings from the output f
 """.strip()
 
 
-def output_path(team_name: str) -> Path:
-    """Return output path data/TeamDiagnostics/Outputs/TeamDiagnostics_{Team}.md."""
+def output_path(team_name: str, template_name: str = "") -> Path:
+    """Return output path for a team, optionally scoped to a prompt template."""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    return OUTPUT_DIR / f"TeamDiagnostics_{normalize_team_name(team_name)}.md"
+    suffix = f"_{template_name}" if template_name else ""
+    return OUTPUT_DIR / f"TeamDiagnostics_{normalize_team_name(team_name)}{suffix}.md"
 
 
 def save_team_diagnostics(team_name: str, content: str, template_name: str = "") -> Path:
     """Save model output as markdown and return the path."""
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    suffix = f"_{template_name}" if template_name else ""
-    path = OUTPUT_DIR / f"TeamDiagnostics_{normalize_team_name(team_name)}{suffix}.md"
+    path = output_path(team_name, template_name=template_name)
     path.write_text(content, encoding="utf-8")
     return path
 
 
-def load_saved_output(team_name: str) -> str | None:
-    """Return the most recently saved output for a team, if any."""
-    path = output_path(team_name)
-    if path.exists():
-        return path.read_text(encoding="utf-8")
-    return None
+def list_saved_outputs(team_name: str) -> List[Path]:
+    """List saved output files for a team, newest first."""
+    if not OUTPUT_DIR.exists():
+        return []
+
+    prefix = f"TeamDiagnostics_{normalize_team_name(team_name)}"
+    matches = [
+        path
+        for path in OUTPUT_DIR.glob(f"{prefix}*.md")
+        if path.is_file()
+    ]
+    return sorted(matches, key=lambda path: path.stat().st_mtime, reverse=True)
+
+
+def load_saved_output(team_name: str, template_name: str = "") -> str | None:
+    """
+    Return saved output for a team.
+
+    Prefers an exact template match when template_name is provided.
+    Otherwise returns the most recently modified matching file.
+    """
+    if template_name:
+        exact = output_path(team_name, template_name=template_name)
+        if exact.exists():
+            return exact.read_text(encoding="utf-8")
+
+    saved = list_saved_outputs(team_name)
+    if not saved:
+        return None
+    return saved[0].read_text(encoding="utf-8")
