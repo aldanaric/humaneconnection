@@ -22,7 +22,12 @@ if st.button("Log in"):
         st.error("Invalid username or password")
     st.rerun()
 
-if st.button("Create Account"):
+
+
+
+
+@st.dialog("Create Account")
+def create_account_dialog():
     with st.form("create_account_form"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
@@ -43,3 +48,5 @@ if st.button("Create Account"):
         else:
             st.success("Account created!")
 
+if st.button("Create Account"):
+    create_account_dialog()
