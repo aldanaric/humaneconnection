@@ -6,6 +6,8 @@ from PIL import Image
 from models.access_level import AccessLevel
 from ui.components import sidebar
 
+
+
 if "account" not in st.session_state:
     st.session_state.account = None
     account = None
@@ -28,6 +30,8 @@ elif account.access_level == AccessLevel.ADMIN:
     pg = st.navigation([chat_page, growth_plan_page, knowledge_base_page, profiles_page, account_page, logout_page])
 elif account.access_level == AccessLevel.USER:
     pg = st.navigation([chat_page, growth_plan_page, profiles_page, logout_page])
+elif account.access_level == AccessLevel.READ_ONLY:
+    pg = st.navigation([chat_page, logout_page])
 else:
     pg = st.navigation([login_page])
 
