@@ -13,6 +13,25 @@ def render(selected_profile, repo):
         "framework and generate the early-stage intelligence report."
     )
     
+    # --- NEW: Check State for UI Indicators ---
+    intake_data = st.session_state.get("intake_text", "").strip()
+    context_data = st.session_state.get("analyst_context", "").strip()
+    
+    # Required Input Indicator
+    if intake_data:
+        st.success("Intake Form is present")
+    else:
+        st.error("Missing Intake Form. Return to inputs.")
+        
+    # Optional Input Indicator (Using info/blue for optional, or you can make it success/green)
+    if context_data:
+        st.success("Analyst Context is present")
+    else:
+        st.info("Analyst Context is empty (Optional)")
+
+    # --- NEW: Disable the button if the required intake data is missing ---
+    is_ready = bool(intake_data)
+    
     if st.button("Generate Diagnostic Intelligence Summary", type="primary"):
         # 1. Validation
         intake_data = st.session_state.get("intake_text", "").strip()

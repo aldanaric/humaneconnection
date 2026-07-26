@@ -11,6 +11,8 @@ from ui.components import diagnostic_inputs
 from ui.components import diagnostic_generate
 from ui.components import diagnostic_output
 
+NO_GENERATED_SUMMARY = "No summary has been generated this session"
+
 logo = Path(__file__).resolve().parent / "static" / "AIDDIlogopendingsquare.png"
 
 st.set_page_config(
@@ -75,6 +77,7 @@ if (
     st.session_state.intake_text = ""
     st.session_state.analyst_context = ""
     st.session_state.diagnostic_output = ""
+    st.session_state.generated_diagnostic_summary = NO_GENERATED_SUMMARY
 
 # --- 3. Tabs Setup ---
 inputs_tab, generate_tab, output_tab = st.tabs(
@@ -89,4 +92,4 @@ with generate_tab:
     diagnostic_generate.render(selected_profile, repo)
 
 with output_tab:
-    diagnostic_output.render(selected_profile, repo)
+    diagnostic_output.render(selected_profile, repo, NO_GENERATED_SUMMARY)

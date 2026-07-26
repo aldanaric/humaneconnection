@@ -1,6 +1,23 @@
 import streamlit as st
+import re
 from pypdf import PdfReader
 
+def extract_text(uploaded_file):
+    """Helper function to extract text based on file type."""
+    suffix = uploaded_file.name.split('.')[-1].lower()
+    
+    if suffix == "pdf":
+        reader = PdfReader(uploaded_file)
+        pages = [page.extract_text() for page in reader.pages if page.extract_text()]
+        raw_text = "\n\n".join(pages)
+        
+        # Clean up PDF artifacts: Replace single newlines with a space, keep double newlines for paragraphs
+        cleaned_text = re.sub(r'(?<!\n)\n(?!\n)', ' ', raw_text)
+        return cleaned_text
+    else:
+        # Handles .md, .csv, and standard text files
+        return uploaded_file.getvalue().decode("utf-8")
+    
 def extract_text(uploaded_file):
     """Helper function to extract text based on file type."""
     suffix = uploaded_file.name.split('.')[-1].lower()
