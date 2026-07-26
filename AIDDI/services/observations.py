@@ -48,14 +48,14 @@ def observations_to_markdown(
 
         sections.append(
             f"""## Area
-        {obs.area}
+{obs.area}
 
-        ### Observation
-        {obs.observation}
+### Observation
+{obs.observation}
 
-        ### Impact
-        {obs.impact}
-        """
+### Impact
+{obs.impact}
+"""
         )
 
     return "\n".join(sections).strip() + "\n"
