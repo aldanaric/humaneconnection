@@ -1,0 +1,22 @@
+-- Copy this file when adding database support for a new app section.
+-- Rename it with the next migration number, for example:
+-- 002_team_diagnostics.sql
+
+-- Example pattern:
+-- CREATE TABLE IF NOT EXISTS team_diagnostics (
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     account_id UUID NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+--     profile_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+--     title TEXT NOT NULL,
+--     content TEXT NOT NULL,
+--     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+--     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- );
+
+-- CREATE INDEX IF NOT EXISTS team_diagnostics_account_updated_idx
+--     ON team_diagnostics(account_id, updated_at DESC);
+
+-- DROP TRIGGER IF EXISTS team_diagnostics_set_updated_at ON team_diagnostics;
+-- CREATE TRIGGER team_diagnostics_set_updated_at
+--     BEFORE UPDATE ON team_diagnostics
+--     FOR EACH ROW EXECUTE FUNCTION set_updated_at();

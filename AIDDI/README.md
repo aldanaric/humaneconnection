@@ -33,3 +33,16 @@ Verify the Streamlit app can connect:
 
 ```bash
 uv run python scripts/db_smoke_test.py
+```
+
+Apply the initial database schema:
+
+```bash
+uv run python scripts/db_migrate.py
+```
+
+Verify the expected schema tables exist:
+
+```bash
+uv run python scripts/db_schema_check.py
+```
