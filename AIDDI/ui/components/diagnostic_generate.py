@@ -97,6 +97,7 @@ def render(selected_profile, repo):
                 # Save locally and to session state
                 diagnostic_service.save_diagnostic_summary(selected_profile, final_report)
                 st.session_state.diagnostic_output = final_report
+                st.session_state.generated_diagnostic_summary = final_report
                 
                 st.success("Summary generated successfully! Navigate to the Outputs tab to review and edit.")
                 
