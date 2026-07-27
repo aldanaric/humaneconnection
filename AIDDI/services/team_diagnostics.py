@@ -1,7 +1,19 @@
+"""Team Diagnostics service: teams, profile-linked members, prompts, and outputs.
+
+Team membership is stored as profile IDs so personality and job-function
+inputs stay consistent with the rest of the app. Filesystem storage is
+temporary until the shared database lands.
+"""
+from __future__ import annotations
+
+import json
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
+from models.document_type import DocumentType
+from models.profile import Profile
+from repositories.profile_repository import ProfileRepository
 from services import prompt_templates
 
 TEAM_DIAGNOSTICS_DIR = Path("data/TeamDiagnostics")
@@ -9,14 +21,7 @@ INPUT_DIR = TEAM_DIAGNOSTICS_DIR / "Inputs"
 OUTPUT_DIR = TEAM_DIAGNOSTICS_DIR / "Outputs"
 SYSTEM_PROMPT_FILE = TEAM_DIAGNOSTICS_DIR / "team_diagnostics_system_prompt.md"
 OUTPUT_FORMAT_FILE = TEAM_DIAGNOSTICS_DIR / "team_diagnostics_output_format.md"
-
-
-def init_prompt_templates() -> None:
-    """Seed the default saved prompt template from bundled markdown files."""
-    prompt_templates.ensure_default_template(
-        load_bundled_system_prompt(),
-        load_bundled_output_format(),
-    )
+TEAM_CONFIG_FILE = "team.json"
 
 AUDIENCES = ("Facilitator", "Manager", "Peer")
 
@@ -28,6 +33,14 @@ OUTPUT_OPTIONS = (
 )
 
 
+def init_prompt_templates() -> None:
+    """Seed the default saved prompt template from bundled markdown files."""
+    prompt_templates.ensure_default_template(
+        load_bundled_system_prompt(),
+        load_bundled_output_format(),
+    )
+
+
 def normalize_team_name(team_name: str) -> str:
     """Normalize a display team name into a folder-safe identifier."""
     team_name = team_name.strip()
@@ -37,8 +50,54 @@ def normalize_team_name(team_name: str) -> str:
     return team_name
 
 
-def create_team_folder(team_name: str) -> Tuple[Path, bool]:
-    """Create a team folder under INPUT_DIR. Returns (folder, existed)."""
+def team_folder(team_name: str) -> Path:
+    return INPUT_DIR / normalize_team_name(team_name)
+
+
+def team_config_path(team_name: str) -> Path:
+    return team_folder(team_name) / TEAM_CONFIG_FILE
+
+
+def _default_team_config(team_name: str, display_name: str = "") -> dict:
+    folder_name = normalize_team_name(team_name)
+    return {
+        "name": folder_name,
+        "display_name": display_name.strip() or folder_name.replace("_", " "),
+        "company_info": "",
+        "team_info": "",
+        "member_profile_ids": [],
+    }
+
+
+def load_team_config(team_name: str) -> dict:
+    path = team_config_path(team_name)
+    if not path.exists():
+        config = _default_team_config(team_name)
+        save_team_config(team_name, config)
+        return config
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    defaults = _default_team_config(team_name)
+    defaults.update(data)
+    if not isinstance(defaults.get("member_profile_ids"), list):
+        defaults["member_profile_ids"] = []
+    return defaults
+
+
+def save_team_config(team_name: str, config: dict) -> Path:
+    folder = team_folder(team_name)
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / TEAM_CONFIG_FILE
+    path.write_text(json.dumps(config, indent=2), encoding="utf-8")
+    return path
+
+
+def create_team(
+    team_name: str,
+    company_info: str = "",
+    team_info: str = "",
+) -> Tuple[str, bool]:
+    """Create a team. Returns (folder_name, existed)."""
     folder_name = normalize_team_name(team_name)
     if not folder_name:
         raise ValueError("Team name is required.")
@@ -46,131 +105,150 @@ def create_team_folder(team_name: str) -> Tuple[Path, bool]:
         raise ValueError("Team name may only contain letters, numbers, and spaces.")
 
     folder = INPUT_DIR / folder_name
-    existed = folder.exists()
+    existed = folder.exists() and team_config_path(folder_name).exists()
     folder.mkdir(parents=True, exist_ok=True)
-    return folder, existed
+
+    if not existed:
+        config = _default_team_config(folder_name, display_name=team_name)
+        config["company_info"] = company_info.strip()
+        config["team_info"] = team_info.strip()
+        save_team_config(folder_name, config)
+
+    return folder_name, existed
 
 
-def split_last_first(folder_name: str) -> Tuple[str, str]:
-    """Return (last, first) from a Last_First folder name."""
-    parts = folder_name.split("_", 1)
-    if len(parts) != 2 or not parts[0] or not parts[1]:
-        raise ValueError("Member folders must be named Last_First.")
-    return parts[0], parts[1]
-
-
-def create_member_folder(team_name: str, member_name: str) -> Tuple[Path, bool]:
-    """Create a Last_First member folder under a team. Returns (folder, existed)."""
-    team_folder = INPUT_DIR / normalize_team_name(team_name)
-    if not team_folder.exists():
-        raise ValueError(f"Team '{team_name}' does not exist.")
-
-    member_name = member_name.strip().replace(",", "_")
-    member_name = re.sub(r"\s+", "", member_name)
-
-    if not re.fullmatch(r"[A-Za-z]+_[A-Za-z]+", member_name):
-        raise ValueError("Member name must be in the format Last_First.")
-
-    folder = team_folder / member_name
-    existed = folder.exists()
-    folder.mkdir(parents=True, exist_ok=True)
-    return folder, existed
-
-
-def save_uploaded_file(uploaded_file, destination: Path) -> None:
-    if uploaded_file is not None:
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes(uploaded_file.getbuffer())
+def update_team_context(
+    team_name: str,
+    company_info: str,
+    team_info: str,
+    display_name: str = "",
+) -> dict:
+    config = load_team_config(team_name)
+    if display_name.strip():
+        config["display_name"] = display_name.strip()
+    config["company_info"] = company_info.strip()
+    config["team_info"] = team_info.strip()
+    save_team_config(team_name, config)
+    return config
 
 
 def list_teams() -> List[str]:
     """List available team folders under data/TeamDiagnostics/Inputs."""
     if not INPUT_DIR.exists():
         return []
-
     return sorted(p.name for p in INPUT_DIR.iterdir() if p.is_dir())
 
 
-def list_members(team_name: str) -> List[str]:
-    """List Last_First member folders for a team."""
-    team_folder = INPUT_DIR / normalize_team_name(team_name)
-    if not team_folder.exists():
-        return []
-
-    return sorted(
-        p.name for p in team_folder.iterdir()
-        if p.is_dir() and "_" in p.name
-    )
+def list_member_profile_ids(team_name: str) -> List[str]:
+    return list(load_team_config(team_name).get("member_profile_ids", []))
 
 
-def personality_path(team_name: str, member_name: str) -> Path:
-    """Canonical personality assessment path for a team member."""
-    last, first = split_last_first(member_name)
-    return (
-        INPUT_DIR
-        / normalize_team_name(team_name)
-        / member_name
-        / f"Personality_Assessment_{first}_{last}.md"
-    )
+def add_member_profile(team_name: str, profile_id: str) -> dict:
+    config = load_team_config(team_name)
+    members = list(config.get("member_profile_ids", []))
+    if profile_id in members:
+        raise ValueError("That profile is already on this team.")
+    members.append(profile_id)
+    config["member_profile_ids"] = members
+    save_team_config(team_name, config)
+    return config
 
 
-def member_status(team_name: str, member_name: str) -> Dict[str, object]:
-    """Return status metadata for one team member."""
-    path = personality_path(team_name, member_name)
-    last, first = split_last_first(member_name)
+def remove_member_profile(team_name: str, profile_id: str) -> dict:
+    config = load_team_config(team_name)
+    members = [
+        member_id
+        for member_id in config.get("member_profile_ids", [])
+        if member_id != profile_id
+    ]
+    config["member_profile_ids"] = members
+    save_team_config(team_name, config)
+    return config
+
+
+def member_status(
+    profile: Profile,
+    repo: ProfileRepository,
+) -> Dict[str, object]:
+    has_personality = repo.document_exists(profile, DocumentType.PERSONALITY)
+    has_job_functions = repo.document_exists(profile, DocumentType.JOB_FUNCTIONS)
     return {
-        "member_name": member_name,
-        "display_name": f"{first} {last}",
-        "personality_path": path,
-        "has_personality": path.exists(),
+        "profile_id": profile.id,
+        "display_name": profile.display_name,
+        "company_name": profile.company_name,
+        "has_personality": has_personality,
+        "has_job_functions": has_job_functions,
+        "is_ready": has_personality and has_job_functions,
     }
 
 
-def team_member_statuses(team_name: str) -> List[Dict[str, object]]:
-    """Return status metadata for every member on a team."""
-    return [member_status(team_name, member) for member in list_members(team_name)]
+def team_member_statuses(
+    team_name: str,
+    repo: ProfileRepository,
+) -> List[Dict[str, object]]:
+    statuses: List[Dict[str, object]] = []
+    for profile_id in list_member_profile_ids(team_name):
+        try:
+            profile = repo.get_profile(profile_id)
+        except FileNotFoundError:
+            statuses.append(
+                {
+                    "profile_id": profile_id,
+                    "display_name": f"Missing profile ({profile_id[:8]}…)",
+                    "company_name": "",
+                    "has_personality": False,
+                    "has_job_functions": False,
+                    "is_ready": False,
+                    "missing_profile": True,
+                }
+            )
+            continue
+        statuses.append(member_status(profile, repo))
+    return statuses
 
 
-def validate_team(team_name: str) -> Tuple[bool, List[Dict[str, object]], List[str]]:
-    """
-    Check whether the team has at least two members with personality assessments.
-
-    Returns (is_valid, member_statuses, issues).
-    """
-    statuses = team_member_statuses(team_name)
+def validate_team(
+    team_name: str,
+    repo: ProfileRepository,
+) -> Tuple[bool, List[Dict[str, object]], List[str]]:
+    """Require at least two ready members (personality + job functions)."""
+    statuses = team_member_statuses(team_name, repo)
     issues: List[str] = []
 
     if len(statuses) < 2:
-        issues.append("Add at least two team members.")
+        issues.append("Add at least two team members from Profiles.")
 
-    missing = [
+    missing_personality = [
         status["display_name"]
         for status in statuses
-        if not status["has_personality"]
+        if not status.get("has_personality")
     ]
-    if missing:
-        issues.append(f"Missing personality assessments for: {', '.join(missing)}")
+    missing_jobs = [
+        status["display_name"]
+        for status in statuses
+        if not status.get("has_job_functions")
+    ]
+    if missing_personality:
+        issues.append(
+            "Missing personality assessments for: "
+            + ", ".join(missing_personality)
+            + ". Update them on the Profiles / Growth Plan inputs."
+        )
+    if missing_jobs:
+        issues.append(
+            "Missing job functions for: "
+            + ", ".join(missing_jobs)
+            + ". Update them on the Profiles / Growth Plan inputs."
+        )
 
     return len(issues) == 0, statuses, issues
 
 
-def read_personality_assessments(team_name: str) -> Dict[str, str]:
-    """Read all personality assessments for a team. Keys are display names."""
-    assessments: Dict[str, str] = {}
-    for status in team_member_statuses(team_name):
-        path = status["personality_path"]
-        if path.exists():
-            assessments[str(status["display_name"])] = path.read_text(encoding="utf-8")
-    return assessments
-
-
 def load_bundled_system_prompt() -> str:
-    """Load the bundled Team Diagnostics system prompt."""
     return SYSTEM_PROMPT_FILE.read_text(encoding="utf-8")
 
 
 def load_bundled_output_format() -> str:
-    """Load the bundled Team Diagnostics output format specification."""
     return OUTPUT_FORMAT_FILE.read_text(encoding="utf-8")
 
 
@@ -197,56 +275,74 @@ def build_user_prompt(
     team_name: str,
     audience: str,
     outputs: List[str],
+    repo: ProfileRepository,
 ) -> str:
-    """Combine team inputs and run configuration into the user prompt."""
-    assessments = read_personality_assessments(team_name)
-    members = ", ".join(assessments.keys())
+    """Combine team context, profile inputs, and run configuration."""
+    config = load_team_config(team_name)
+    display_name = config.get("display_name") or team_name
+    company_info = (config.get("company_info") or "").strip()
+    team_info = (config.get("team_info") or "").strip()
 
-    assessment_blocks = "\n\n".join(
-        f"## {name}\n\n```markdown\n{content}\n```"
-        for name, content in assessments.items()
-    )
+    member_blocks: List[str] = []
+    member_names: List[str] = []
+
+    for profile_id in list_member_profile_ids(team_name):
+        profile = repo.get_profile(profile_id)
+        member_names.append(profile.display_name)
+        personality = repo.load_document(profile, DocumentType.PERSONALITY)
+        job_functions = repo.load_document(profile, DocumentType.JOB_FUNCTIONS)
+        member_blocks.append(
+            f"## {profile.display_name}\n\n"
+            f"### Personality Assessment\n\n```markdown\n{personality}\n```\n\n"
+            f"### Job Functions\n\n```markdown\n{job_functions}\n```"
+        )
 
     output_list = "\n".join(f"- {output}" for output in outputs)
+    context_sections = []
+    if company_info:
+        context_sections.append(f"## Company / organization\n\n{company_info}")
+    if team_info:
+        context_sections.append(f"## Team context\n\n{team_info}")
+    context_block = "\n\n".join(context_sections) if context_sections else "_No additional company or team context provided._"
 
     return f"""
-Generate a Team Diagnostics packet for team **{team_name}**.
+Generate a Team Diagnostics packet for team **{display_name}**.
 
 # Run Configuration
 
 - **Audience:** {audience}
-- **Team members:** {members}
+- **Team members:** {", ".join(member_names)}
 - **Requested outputs:**
 
 {output_list}
 
 Only generate the outputs listed above. Use the exact headings from the output format specification.
 
-# Personality Assessments
+# Company and team context
 
-{assessment_blocks}
+{context_block}
+
+# Member inputs
+
+{chr(10).join(member_blocks)}
 """.strip()
 
 
 def output_path(team_name: str, template_name: str = "") -> Path:
-    """Return output path for a team, optionally scoped to a prompt template."""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     suffix = f"_{template_name}" if template_name else ""
     return OUTPUT_DIR / f"TeamDiagnostics_{normalize_team_name(team_name)}{suffix}.md"
 
 
 def save_team_diagnostics(team_name: str, content: str, template_name: str = "") -> Path:
-    """Save model output as markdown and return the path."""
     path = output_path(team_name, template_name=template_name)
     path.write_text(content, encoding="utf-8")
     return path
 
 
 def list_saved_outputs(team_name: str) -> List[Path]:
-    """List saved output files for a team, newest first."""
     if not OUTPUT_DIR.exists():
         return []
-
     prefix = f"TeamDiagnostics_{normalize_team_name(team_name)}"
     matches = [
         path
@@ -256,13 +352,7 @@ def list_saved_outputs(team_name: str) -> List[Path]:
     return sorted(matches, key=lambda path: path.stat().st_mtime, reverse=True)
 
 
-def load_saved_output(team_name: str, template_name: str = "") -> str | None:
-    """
-    Return saved output for a team.
-
-    Prefers an exact template match when template_name is provided.
-    Otherwise returns the most recently modified matching file.
-    """
+def load_saved_output(team_name: str, template_name: str = "") -> Optional[str]:
     if template_name:
         exact = output_path(team_name, template_name=template_name)
         if exact.exists():

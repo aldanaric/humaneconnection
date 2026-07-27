@@ -42,7 +42,6 @@ elif account.access_level == AccessLevel.USER:
         chat_page,
         growth_plan_page,
         team_diagnostics_page,
-        saved_prompts_page,
         profiles_page,
         logout_page,
     ])

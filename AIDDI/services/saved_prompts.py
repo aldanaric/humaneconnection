@@ -93,3 +93,48 @@ def get_saved_prompt(prompt_id: str) -> Optional[SavedPrompt]:
         if item.id == prompt_id:
             return item
     return None
+
+
+def save_prompt_content(
+    prompt_id: str,
+    system_prompt: str,
+    output_format: str = "",
+) -> SavedPrompt:
+    """Persist edits for supported filesystem-backed prompts."""
+    if prompt_id.startswith("team_diagnostics:"):
+        name = prompt_id.split(":", 1)[1]
+        prompt_templates.save_template(name, system_prompt, output_format)
+        updated = get_saved_prompt(prompt_id)
+        if updated is None:
+            raise FileNotFoundError(f"Prompt '{prompt_id}' not found after save.")
+        return updated
+
+    if prompt_id == "growth_plan:default":
+        GROWTH_PLAN_SYSTEM_PROMPT.parent.mkdir(parents=True, exist_ok=True)
+        GROWTH_PLAN_SYSTEM_PROMPT.write_text(system_prompt, encoding="utf-8")
+        updated = get_saved_prompt(prompt_id)
+        if updated is None:
+            raise FileNotFoundError("Growth Plan prompt not found after save.")
+        return updated
+
+    raise ValueError(
+        "This prompt is defined in code and cannot be edited here yet "
+        f"({prompt_id})."
+    )
+
+
+def create_team_diagnostics_template(
+    name: str,
+    system_prompt: str,
+    output_format: str,
+) -> SavedPrompt:
+    saved_name = prompt_templates.save_template(name, system_prompt, output_format)
+    prompt_id = f"team_diagnostics:{saved_name}"
+    created = get_saved_prompt(prompt_id)
+    if created is None:
+        raise FileNotFoundError(f"Created prompt '{prompt_id}' could not be loaded.")
+    return created
+
+
+def is_editable(prompt: SavedPrompt) -> bool:
+    return prompt.feature in {"Growth Plan", "Team Diagnostics"}
