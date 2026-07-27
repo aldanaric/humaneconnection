@@ -25,7 +25,7 @@ class AccountRepository:
     ) -> Account:
 
         if self.account_exists(account_name):
-            raise ValueError("Account already exists")
+            raise ValueError("Account with this username already exists")
 
         account_id = str(uuid.uuid4())
 
@@ -151,6 +151,16 @@ class AccountRepository:
             new_password.encode(),
             bcrypt.gensalt()
         ).decode()
+
+        self.update_account(account)
+
+    def update_access_level(
+        self,
+        account: Account,
+        new_access_level: AccessLevel
+    ) -> None:
+
+        account.access_level = new_access_level
 
         self.update_account(account)
 

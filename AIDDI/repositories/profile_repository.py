@@ -1,6 +1,7 @@
 import json
 import uuid
 from pathlib import Path
+
 from pypdf import PdfReader
 from pathlib import Path
 from datetime import datetime
@@ -8,6 +9,7 @@ from datetime import datetime
 from models.profile import Profile
 from models.document_type import DocumentType
 from models.growth_plan import GrowthPlan
+from models.profile_document import ProfileDocument
 
 
 class ProfileRepository:
@@ -228,16 +230,49 @@ class ProfileRepository:
         path = profile.root / document.filename
         return path.exists()
 
-    def list_profile_files(
+    def list_documents(
         self,
         profile: Profile
-    ) -> list[str]:
+    ) -> list[ProfileDocument]:
+
+        documents = []
+
+        for path in profile.root.glob("*.md"):
+
+            if not path.is_file():
+                continue
+
+            if path.name == self.PROFILE_FILE:
+                continue
+
+            stat = path.stat()
+
+            documents.append(
+                ProfileDocument(
+                    id=path.stem,
+                    name=path.stem.replace("_", " "),
+                    modified=datetime.fromtimestamp(stat.st_mtime)
+                )
+            )
 
         return sorted(
-            path.stem
-            for path in profile.root.rglob("*")
-            if path.is_file() and path.name != self.PROFILE_FILE
+            documents,
+            key=lambda d: d.modified,
+            reverse=True
         )
+
+    def load_profile_document(
+        self,
+        profile: Profile,
+        document: ProfileDocument
+    ) -> str:
+
+        path = profile.root / f"{document.id}.md"
+
+        if not path.exists():
+            return ""
+
+        return path.read_text(encoding="utf-8")
 
     # Helper methods
 
