@@ -21,8 +21,6 @@ with new_account_tab:
             username = st.text_input("Username")
             password = st.text_input("Password", type="password")
             confirm_password = st.text_input("Confirm password", type="password")
-            if password != confirm_password:
-                st.error("Passwords do not match")
 
             access_level = st.selectbox(
                 "Access Level",
@@ -33,6 +31,12 @@ with new_account_tab:
             submitted = st.form_submit_button("Create Account")
 
         if submitted:
+            if password != confirm_password:
+                st.error("Passwords do not match")
+                st.stop()
+            if not username.strip() or not password:
+                st.error("Username and password are required")
+                st.stop()
             try:
                 account_repo.create_account(
                     username,
@@ -72,6 +76,7 @@ with current_account_tab:
 
         st.divider()
         st.subheader(f"Manage {account.account_name}")
+        new_access = account.access_level
 
         new_password = st.text_input(
             "New Password",
@@ -97,10 +102,11 @@ with current_account_tab:
                         account,
                         new_password
                     )
-                account_repo.update_access_level(
-                    account,
-                    new_access
-                )
+                if new_access != account.access_level:
+                    account_repo.update_access_level(
+                        account,
+                        new_access
+                    )
 
                 st.success("Updated!")
                 del st.session_state.selected_account

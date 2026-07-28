@@ -13,7 +13,7 @@ from ui.components import diagnostic_output
 
 NO_GENERATED_SUMMARY = "No summary has been generated this session"
 
-logo = Path(__file__).resolve().parent / "static" / "AIDDIlogopendingsquare.png"
+logo = Path(__file__).resolve().parents[1] / "static" / "AIDDIlogopendingsquare.png"
 
 st.set_page_config(
     page_title="Diagnostic Intelligence Summary",
@@ -41,6 +41,8 @@ options = [
     *profiles,
     "+ Add new profile"
 ]
+
+selected_profile = None
 
 selected = st.selectbox(
     "Select Client / Profile",

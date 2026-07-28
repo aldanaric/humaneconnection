@@ -16,7 +16,7 @@ from ui.components import growth_plan_output
 from models.account import Account
 from repositories.account_repository import AccountRepository
 
-logo = Path(__file__).resolve().parent / "static" / "AIDDIlogopendingsquare.png"
+logo = Path(__file__).resolve().parents[1] / "static" / "AIDDIlogopendingsquare.png"
 
 st.set_page_config(
     page_title="Growth Plan",

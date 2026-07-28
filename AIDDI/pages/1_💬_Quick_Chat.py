@@ -7,7 +7,7 @@ from services import prompts
 from ui.components import sidebar
 from ui.interactions import chat_handler, book_handler
 
-logo = Path(__file__).resolve().parent / "static" / "AIDDIlogopendingquare.png"
+logo = Path(__file__).resolve().parents[1] / "static" / "AIDDIlogopendingsquare.png"
 # --- Page Configuration ---
 st.set_page_config(
     page_title="Quick Chat",
