@@ -54,7 +54,6 @@ elif account.access_level == AccessLevel.USER:
 elif account.access_level == AccessLevel.READ_ONLY:
     pg = st.navigation([
         chat_page,
-        profiles_page,
         logout_page,
     ])
 else:
