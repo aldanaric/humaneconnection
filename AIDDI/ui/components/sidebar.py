@@ -1,5 +1,5 @@
 import streamlit as st
-
+from pathlib import Path
 from services import llm_config
 
 
@@ -124,7 +124,8 @@ def show() -> None:
     with st.sidebar:
         _render_sidebar_layout_css()
 
-        st.image("static/AIDDIlogopending.png", width=300)
+        logo_path = Path(__file__).parent.parent.parent / "static" / "AIDDIlogopending.png"
+        st.image(str(logo_path), width=300)
         st.markdown("v2026.07")
         #st.markdown(f"""
         #    <a href="/" style="color:black;text-decoration: none;">

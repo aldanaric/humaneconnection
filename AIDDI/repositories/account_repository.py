@@ -6,16 +6,11 @@ import json
 import uuid
 import shutil
 import bcrypt
+from services.database import connect
+from psycopg.errors import UniqueViolation
 
 
 class AccountRepository:
-
-    ACCOUNT_FILE = "account.json"
-
-    def __init__(self):
-        self.root = Path("data/Accounts")
-        self.root.mkdir(parents=True, exist_ok=True)
-
 
     def create_account(
         self,
@@ -24,92 +19,95 @@ class AccountRepository:
         access_level: AccessLevel = AccessLevel.USER
     ) -> Account:
 
-        if self.account_exists(account_name):
-            raise ValueError("Account with this username already exists")
-
-        account_id = str(uuid.uuid4())
-
-        folder = self.root / account_id
-        folder.mkdir(parents=True)
-
-        (folder / "Profiles").mkdir(exist_ok=True)
-
         password_hash = bcrypt.hashpw(
             password.encode("utf-8"),
             bcrypt.gensalt()
         ).decode("utf-8")
 
-        account = Account(
-            id=account_id,
-            account_name=account_name,
-            password_hash=password_hash,
-            access_level=access_level,
-            root=folder
-        )
+        try:
+            with connect() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        INSERT INTO accounts (account_name, password_hash, access_level)
+                        VALUES (%s, %s, %s)
+                        RETURNING id, account_name, password_hash, access_level
+                        """,
+                        (account_name, password_hash, access_level)
+                    )
+                    row = cursor.fetchone()
+                conn.commit()
+        except UniqueViolation:
+            raise ValueError("Account with this username already exists")
 
-        self._save_account_metadata(account)
-
-
-        return account
+        return self._account_from_row(row)
 
     def list_accounts(self) -> list[Account]:
 
-        accounts = []
+        with connect() as conn:
+            with conn.cursor() as cursor:
 
-        for folder in self.root.iterdir():
-
-            if not folder.is_dir():
-                continue
-
-            metadata = folder / self.ACCOUNT_FILE
-
-            if not metadata.exists():
-                continue
-
-            data = json.loads(metadata.read_text())
-
-            accounts.append(
-                Account(
-                    id=data["id"],
-                    account_name=data["account_name"],
-                    password_hash=data["password_hash"],
-                    access_level=AccessLevel(data["access_level"]),
-                    root=folder
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        account_name,
+                        password_hash,
+                        access_level
+                    FROM accounts
+                    ORDER BY LOWER(account_name)
+                    """
                 )
-            )
+                rows = cursor.fetchall()
 
-        return sorted(accounts, key=lambda a:a.account_name.lower())
+        return [
+            self._account_from_row(row)
+            for row in rows
+        ]
 
     def get_account(self, account_id: str) -> Account:
 
-        folder = self.root / account_id
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        account_name,
+                        password_hash,
+                        access_level
+                    FROM accounts
+                    WHERE id = %s
+                    """,
+                    (account_id,)
+                )
+                row = cursor.fetchone()
+                if row is None:
+                    raise ValueError("Account not found")
 
-        metadata = folder / self.ACCOUNT_FILE
+        return self._account_from_row(row)
 
-        if not metadata.exists():
-            raise FileNotFoundError(account_id)
-
-        data = json.loads(metadata.read_text())
-
-        return Account(
-            id=data["id"],
-            account_name=data["account_name"],
-            password_hash=data["password_hash"],
-            access_level=AccessLevel(data["access_level"]),
-            root=folder
-        )
 
     def get_account_by_name(
         self,
         account_name: str,
     ) -> Account | None:
 
-        for account in self.list_accounts():
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT id, account_name, password_hash, access_level
+                    FROM accounts
+                    WHERE account_name = %s
+                    """,
+                    (account_name,)
+                )
+                row = cursor.fetchone()
+                if row is None:
+                    raise ValueError("Account not found")
 
-            if account.account_name.lower() == account_name.lower():
-                return account
-
-        return None
+        return self._account_from_row(row)
 
     def authenticate(
         self,
@@ -137,9 +135,17 @@ class AccountRepository:
         account: Account,
     ) -> None:
 
-        self._save_account_metadata(account)
-
-
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE accounts
+                    SET
+                        account_name = %s,
+                        password_hash = %s,
+                        access_level = %s
+                    WHERE id = %s"""
+                )
 
     def change_password(
         self,
@@ -170,44 +176,44 @@ class AccountRepository:
         account_name: str,
     ) -> bool:
 
-        return self.get_account_by_name(account_name) is not None
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT EXISTS(
+                        SELECT 1
+                        FROM accounts
+                        WHERE account_name = %s
+                    )
+                    """,
+                    (account_name,)
+                )
+                return cursor.fetchone()[0]
 
     def delete_account(
         self,
         account_id: str,
     ) -> None:
 
-        folder = self.root / account_id
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    DELETE FROM accounts
+                    WHERE id = %s""",
+                    (account_id,)
+                )
 
-        if folder.exists():
-            shutil.rmtree(folder)
-
-
-    def get_profiles_root(
-        self,
-        account: Account
-    ) -> Path:
-        return account.root / "Profiles"
 
     # private helper
 
-    def _save_account_metadata(
-        self,
-        account: Account,
-    ) -> None:
-
-        metadata = {
-            "id": account.id,
-            "account_name": account.account_name,
-            "password_hash": account.password_hash,
-            "access_level": account.access_level,
-        }
-
-        path = account.root / self.ACCOUNT_FILE
-
-        path.write_text(
-            json.dumps(metadata, indent=4),
-            encoding="utf-8"
+    @staticmethod
+    def _account_from_row(row) -> Account:
+        return Account(
+            id=str(row[0]),
+            account_name=row[1],
+            password_hash=row[2],
+            access_level=AccessLevel(row[3])
         )
 
 

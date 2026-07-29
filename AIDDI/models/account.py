@@ -10,5 +10,4 @@ class Account:
     account_name: str
     password_hash: str
     access_level: AccessLevel
-    root: Path
 

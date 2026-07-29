@@ -14,8 +14,6 @@ if "account" not in st.session_state:
 else:
     account = st.session_state.get("account")
 
-icon = Image.open("static/AIDDIlogopendingsquare.png")
-
 login_page = st.Page("pages/Log_in.py", title="Log in")
 logout_page = st.Page("pages/Log_out.py", title="Log out")
 chat_page = st.Page("pages/1_💬_Quick_Chat.py")

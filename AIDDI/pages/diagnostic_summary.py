@@ -30,9 +30,8 @@ account = st.session_state.get("account")
 if account is None:
     st.warning("Please log in to view this page.")
     st.stop()
-    
-account_repo = AccountRepository()
-repo = ProfileRepository(account_repo.get_profiles_root(account))
+
+repo = ProfileRepository(account.id)
 
 profiles = repo.list_profiles()
 
@@ -55,7 +54,7 @@ if selected == "+ Add new profile":
     first_name = st.text_input("First Name")
     last_name = st.text_input("Last Name")
     company = st.text_input("Employer")
-    
+
     if st.button("Create profile"):
         profile = repo.create_profile(first_name, last_name, company)
         st.success(f"Created profile for {profile.display_name}")

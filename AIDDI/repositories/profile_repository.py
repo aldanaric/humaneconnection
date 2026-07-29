@@ -11,15 +11,14 @@ from models.document_type import DocumentType
 from models.growth_plan import GrowthPlan
 from models.profile_document import ProfileDocument
 
+from services.database import connect
+
 
 class ProfileRepository:
     """Repository for creating, loading, and saving Growth Plan profiles"""
 
-    PROFILE_FILE = "profile.json"
-
-    def __init__(self, root: Path):
-        self.root = root
-        self.root.mkdir(parents=True, exist_ok=True)
+    def __init__(self, account_id: str):
+        self.account_id = account_id
 
     def create_profile(
         self,
@@ -28,71 +27,60 @@ class ProfileRepository:
         company_name: str
     ) -> Profile:
         """Create a new profile"""
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO profiles (
+                        account_id,
+                        first_name,
+                        last_name,
+                        company_name
+                    )
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING id, first_name, last_name, company_name""",
+                    (self.account_id, first_name, last_name, company_name)
+                )
+                row = cursor.fetchone()
+            conn.commit()
 
-        profile_id = str(uuid.uuid4())
-        folder = self.root / profile_id
-        folder.mkdir(parents=True)
+        return self._profile_from_row(row)
 
-        profile = Profile(
-            id=profile_id,
-            first_name=first_name,
-            last_name=last_name,
-            company_name=company_name,
-            root=folder
-        )
-
-        self._save_profile_metadata(profile)
-
-        return profile
-
-    def list_profiles(self) -> list[Profile]:
+    def list_profiles(
+        self,
+    ) -> list[Profile]:
         """Return every profile"""
 
-        profiles = []
-
-        if not self.root.exists():
-            return profiles
-
-        for folder in self.root.iterdir():
-            if not folder.is_dir():
-                continue
-
-            metadata = folder / self.PROFILE_FILE
-
-            if not metadata.exists():
-                continue
-
-            data = json.loads(metadata.read_text(encoding="utf-8"))
-
-            profiles.append(
-                Profile(
-                    id=data["id"],
-                    first_name=data["first_name"],
-                    last_name=data["last_name"],
-                    company_name=data["company_name"],
-                    root=folder,
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT id, first_name, last_name, company_name
+                    FROM profiles
+                    WHERE account_id = %s""",
+                    (self.account_id,)
                 )
-            )
+                rows = cursor.fetchall()
 
-        return sorted(profiles, key=lambda p: (p.last_name, p.first_name))
+        return [
+            self._profile_from_row(row)
+            for row in rows
+        ]
 
     def get_profile(self, profile_id: str) -> Profile:
-        folder = self.root / profile_id
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT id, first_name, last_name, company_name
+                    FROM profiles
+                    WHERE id = %s
+                    AND account_id = %s""",
+                    (profile_id, self.account_id)
+                )
+                row = cursor.fetchone()
 
-        metadata = folder / self.PROFILE_FILE
-
-        if not metadata.exists():
-            raise FileNotFoundError(profile_id)
-
-        data = json.loads(metadata.read_text(encoding="utf-8"))
-
-        return Profile(
-            id=data["id"],
-            first_name=data["first_name"],
-            last_name=data["last_name"],
-            company_name=data["company_name"],
-            root=folder,
-        )
+        return self._profile_from_row(row)
 
     def load_document(
         self,
@@ -100,12 +88,24 @@ class ProfileRepository:
         document: DocumentType,
     ) -> str:
 
-        path = profile.root / document.filename
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT content
+                    FROM profile_documents
+                    WHERE profile_id = %s
+                    AND document_type = %s
+                    """,
+                    (
+                        profile.id,
+                        document.value
+                    )
+                )
 
-        if not path.exists():
-            return ""
+                row = cursor.fetchone()
 
-        return path.read_text(encoding="utf-8")
+        return row[0] if row else ""
 
     def save_document(
         self,
@@ -114,14 +114,32 @@ class ProfileRepository:
         text: str,
     ) -> None:
 
-        path = profile.root / document.filename
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO profile_documents
+                    (
+                        profile_id,
+                        document_type,
+                        content
+                    )
+                    VALUES (%s, %s, %s)
 
-        if not text.strip():
-            if path.exists():
-                path.unlink()
-            return
+                    ON CONFLICT
+                    (
+                    profile_id,
+                    document_type
+                    )
 
-        path.write_text(text, encoding="utf-8")
+                    DO UPDATE SET
+                        content = EXCLUDED.content
+                    """,
+                    (profile.id,
+                     document.value,
+                     text),
+                )
+            conn.commit()
 
 
 
@@ -132,49 +150,72 @@ class ProfileRepository:
         title: str
     ) -> GrowthPlan:
 
-        directory = self._growth_plan_directory(profile)
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO growth_plans
+                    (
+                    profile_id,
+                    account_id,
+                    title,
+                    content
+                    )
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING id, profile_id, title, content, created_at, updated_at""",
+                    (profile.id, self.account_id, title, content)
+                )
+                row = cursor.fetchone()
+            conn.commit()
 
-        filename = f"{title}.md"
+        return self._growth_plan_from_row(row)
 
-        path = self._get_unique_path(directory, filename)
-
-        path.write_text(
-            content,
-            encoding="utf-8"
-        )
-
-        return self._growth_plan_from_path(profile, path)
 
     def update_growth_plan(
         self,
         plan: GrowthPlan
     ) -> GrowthPlan:
-        path = self._growth_plan_path_from_id(
-            plan.profile_id,
-            plan.id
-        )
-
-        path.write_text(
-            plan.content,
-            encoding="utf-8"
-        )
-
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE growth_plans
+                    SET content = %s,
+                        updated_at = NOW()
+                    WHERE id = %s
+                    AND account_id = %s""",
+                    (plan.content, plan.id, self.account_id)
+                )
+            conn.commit()
         return self.load_growth_plan(
             self.get_profile(plan.profile_id),
             plan.id
         )
 
     def list_growth_plans(self, profile) -> list[GrowthPlan]:
-        directory = self._growth_plan_directory(profile)
 
-        return sorted(
-            (
-            self._growth_plan_from_path(profile, path)
-            for path in directory.glob("*.md")
-            ),
-            key=lambda p: p.modified,
-            reverse=True
-        )
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        profile_id,
+                        title,
+                        content,
+                        created_at,
+                        updated_at
+                    FROM growth_plans
+                    WHERE profile_id = %s
+                    ORDER BY updated_at DESC""",
+                    (profile.id,)
+                )
+                rows = cursor.fetchall()
+
+        return [
+            self._growth_plan_from_row(row)
+            for row in rows
+        ]
 
     def load_growth_plan(
         self,
@@ -182,9 +223,28 @@ class ProfileRepository:
         plan_id: str
     ) -> GrowthPlan:
 
-        path = self._growth_plan_path(profile, plan_id)
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        profile_id,
+                        title,
+                        content,
+                        created_at,
+                        updated_at
+                    FROM growth_plans
+                    WHERE profile_id = %s
+                    AND id = %s""",
+                    (profile.id, plan_id)
+                )
+                row = cursor.fetchone()
 
-        return self._growth_plan_from_path(profile, path)
+        if row is None:
+            raise FileNotFoundError(plan_id)
+
+        return self._growth_plan_from_row(row)
 
 
     def upload_document(
@@ -216,7 +276,7 @@ class ProfileRepository:
     ) -> dict[DocumentType, bool]:
 
         return {
-            document: (profile.root / document.filename).exists()
+            document: self.document_exists(profile, document)
             for document in DocumentType
             if document != DocumentType.GROWTH_PLAN
         }
@@ -227,39 +287,49 @@ class ProfileRepository:
         document: DocumentType
     ) -> bool:
 
-        path = profile.root / document.filename
-        return path.exists()
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT EXISTS(
+                        SELECT 1
+                        FROM profile_documents
+                        WHERE profile_id = %s
+                        AND document_type = %s
+                    )
+                    """,
+                    (profile.id, document.value)
+                )
+                return cursor.fetchone()[0]
 
     def list_documents(
         self,
         profile: Profile
     ) -> list[ProfileDocument]:
 
-        documents = []
-
-        for path in profile.root.glob("*.md"):
-
-            if not path.is_file():
-                continue
-
-            if path.name == self.PROFILE_FILE:
-                continue
-
-            stat = path.stat()
-
-            documents.append(
-                ProfileDocument(
-                    id=path.stem,
-                    name=path.stem.replace("_", " "),
-                    modified=datetime.fromtimestamp(stat.st_mtime)
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        document_type,
+                        updated_at
+                    FROM profile_documents
+                    WHERE profile_id = %s
+                    ORDER BY updated_at DESC""",
+                    (profile.id,)
                 )
-            )
 
-        return sorted(
-            documents,
-            key=lambda d: d.modified,
-            reverse=True
-        )
+                rows = cursor.fetchall()
+        return [
+            ProfileDocument(
+                id=str(row[0]),
+                name=row[1].replace("_", " "),
+                modified=row[2]
+            )
+            for row in rows
+        ]
 
     def load_profile_document(
         self,
@@ -267,31 +337,28 @@ class ProfileRepository:
         document: ProfileDocument
     ) -> str:
 
-        path = profile.root / f"{document.id}.md"
-
-        if not path.exists():
-            return ""
-
-        return path.read_text(encoding="utf-8")
+        with connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT content
+                    FROM profile_documents
+                    WHERE profile_id = %s
+                    AND id = %s""",
+                    (profile.id, document.id)
+                )
+                row = cursor.fetchone()
+        return row[0] if row else ""
 
     # Helper methods
+    @staticmethod
+    def _profile_from_row(row) -> Profile:
 
-    def _save_profile_metadata(
-        self,
-        profile: Profile
-    ) -> None:
-
-        metadata = {
-            "id": profile.id,
-            "first_name": profile.first_name,
-            "last_name": profile.last_name,
-            "company_name": profile.company_name
-        }
-        path = profile.root / self.PROFILE_FILE
-
-        path.write_text(
-            json.dumps(metadata, indent=4),
-            encoding="utf-8"
+        return Profile(
+            id=str(row[0]),
+            first_name=row[1],
+            last_name=row[2],
+            company_name=row[3],
         )
 
     @staticmethod
@@ -308,60 +375,16 @@ class ProfileRepository:
 
         return "\n\n".join(pages)
 
-    def _growth_plan_directory(self, profile: Profile):
-        directory = profile.root / "GrowthPlans"
-        directory.mkdir(exist_ok=True)
-        return directory
-
-    def _get_unique_path(self, directory: Path, filename: str) -> Path:
-
-        path = directory / filename
-
-        if not path.exists():
-            return path
-
-        stem = path.stem
-        suffix = path.suffix
-
-        counter = 2
-
-        while True:
-            new_path = directory / f"{stem}_{counter}{suffix}"
-
-            if not new_path.exists():
-                return new_path
-
-            counter +=1
-
-    def _growth_plan_from_path(
-        self,
-        profile: Profile,
-        path: Path
-    ) -> GrowthPlan:
-
-        stat = path.stat()
+    @staticmethod
+    def _growth_plan_from_row(row) -> GrowthPlan:
 
         return GrowthPlan(
-            id=path.stem,
-            profile_id=profile.id,
-            title=path.stem.replace("_", " "),
-            content=path.read_text(encoding="utf-8"),
-            created=datetime.fromtimestamp(stat.st_ctime),
-            modified=datetime.fromtimestamp(stat.st_mtime)
+            id=str(row[0]),
+            profile_id=row[1],
+            title=row[2],
+            content=row[3],
+            created=row[4],
+            modified=row[5]
         )
 
-    def _growth_plan_path(
-        self,
-        profile: Profile,
-        plan_id: str
-    ) -> Path:
-        return self._growth_plan_directory(profile) / f"{plan_id}.md"
-
-    def _growth_plan_path_from_id(
-        self,
-        profile_id: str,
-        plan_id: str
-    ) -> Path:
-        profile = self.get_profile(profile_id)
-        return self._growth_plan_directory(profile) / f"{plan_id}.md"
 

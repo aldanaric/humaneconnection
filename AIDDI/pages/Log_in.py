@@ -21,6 +21,7 @@ if st.button("Log in"):
     account = account_repo.authenticate(username, password)
     if account:
         st.session_state.account = account
+        st.write(st.session_state.account)
     else:
         st.error("Invalid username or password")
     st.rerun()

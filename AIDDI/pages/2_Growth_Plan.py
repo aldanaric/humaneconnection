@@ -30,9 +30,7 @@ st.header("Growth Plan")
 
 account = st.session_state.get("account")
 
-account_repo = AccountRepository()
-
-repo = ProfileRepository(account_repo.get_profiles_root(account))
+repo = ProfileRepository(account.id)
 
 NO_GENERATED_PLAN = "No plan has been generated this session"
 
