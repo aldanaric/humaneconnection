@@ -15,7 +15,7 @@ account_repo = AccountRepository()
 if account.access_level == AccessLevel.ADMIN:
     rows = []
     for acct in account_repo.list_accounts():
-        repo = ProfileRepository(account_repo.get_profiles_root(acct))
+        repo = ProfileRepository(acct.id)
 
         for profile in repo.list_profiles():
             rows.append({
@@ -26,7 +26,7 @@ if account.access_level == AccessLevel.ADMIN:
                 "Owner": acct.account_name
             })
 else:
-    repo = ProfileRepository(account_repo.get_profiles_root(account))
+    repo = ProfileRepository(account.id)
 
     rows = [
         {

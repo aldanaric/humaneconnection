@@ -29,8 +29,7 @@ if account is None:
     st.warning("Log in to use Team Diagnostics.")
     st.stop()
 
-account_repo = AccountRepository()
-repo = ProfileRepository(account_repo.get_profiles_root(account))
+repo = ProfileRepository(account.id)
 team_diagnostics.init_prompt_templates()
 
 team_tab, generate_tab, output_tab = st.tabs(
