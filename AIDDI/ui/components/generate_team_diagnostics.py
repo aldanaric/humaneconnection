@@ -5,15 +5,21 @@ import asyncio
 
 import streamlit as st
 
+from models.account import Account
 from repositories.profile_repository import ProfileRepository
 from services import rag
 from ui.interactions import chat_handler
+from ui.components import team_diagnostics_output
 import services.team_diagnostics as team_diagnostics
 
 
-def render(selected_team: str, repo: ProfileRepository) -> str:
+def render(account: Account, selected_team: str, repo: ProfileRepository) -> str:
     """Render generate controls. Returns the selected prompt template name."""
-    member_statuses = team_diagnostics.team_member_statuses(selected_team, repo)
+    member_statuses = team_diagnostics.team_member_statuses(
+        account,
+        selected_team,
+        repo,
+    )
 
     templates = team_diagnostics.list_prompt_templates()
     if not templates:
@@ -55,7 +61,11 @@ def render(selected_team: str, repo: ProfileRepository) -> str:
             default=list(team_diagnostics.OUTPUT_OPTIONS),
         )
 
-    is_valid, _, issues = team_diagnostics.validate_team(selected_team, repo)
+    is_valid, _, issues = team_diagnostics.validate_team(
+        account,
+        selected_team,
+        repo,
+    )
 
     if issues:
         for issue in issues:
@@ -86,6 +96,7 @@ def render(selected_team: str, repo: ProfileRepository) -> str:
     try:
         system_message = team_diagnostics.build_system_message(selected_template)
         user_prompt = team_diagnostics.build_user_prompt(
+            account,
             selected_team,
             audience,
             selected_outputs,
@@ -128,14 +139,17 @@ def render(selected_team: str, repo: ProfileRepository) -> str:
                 )
             )
 
-        saved_path = team_diagnostics.save_team_diagnostics(
+        report = team_diagnostics.save_team_diagnostics(
+            account,
             selected_team,
             response,
             template_name=selected_template,
+            audience=audience,
+            requested_outputs=selected_outputs,
+            used_humane_connection=use_humane_connection,
         )
-        st.session_state[f"last_output_{selected_team}"] = response
-        st.session_state[f"editor_output_{selected_team}"] = response
-        st.success(f"Saved to `{saved_path}`")
+        team_diagnostics_output.set_current_report(selected_team, report)
+        st.success(f"Saved report `{report.title}`.")
         st.info("Open the **Output** tab to review and edit the packet.")
     except Exception as exc:
         st.exception(exc)

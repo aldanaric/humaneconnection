@@ -1,27 +1,21 @@
-"""Team Diagnostics service: teams, profile-linked members, prompts, and outputs.
-
-Team membership is stored as profile IDs so personality and job-function
-inputs stay consistent with the rest of the app. Filesystem storage is
-temporary until the shared database lands.
-"""
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from models.account import Account
 from models.document_type import DocumentType
 from models.profile import Profile
+from models.team import Team
+from models.team_diagnostic_report import TeamDiagnosticReport
 from repositories.profile_repository import ProfileRepository
+from repositories.team_diagnostics_repository import TeamDiagnosticsRepository
 from services import prompt_templates
 
 TEAM_DIAGNOSTICS_DIR = Path("data/TeamDiagnostics")
-INPUT_DIR = TEAM_DIAGNOSTICS_DIR / "Inputs"
-OUTPUT_DIR = TEAM_DIAGNOSTICS_DIR / "Outputs"
 SYSTEM_PROMPT_FILE = TEAM_DIAGNOSTICS_DIR / "team_diagnostics_system_prompt.md"
 OUTPUT_FORMAT_FILE = TEAM_DIAGNOSTICS_DIR / "team_diagnostics_output_format.md"
-TEAM_CONFIG_FILE = "team.json"
 
 AUDIENCES = ("Facilitator", "Manager", "Peer")
 
@@ -31,6 +25,8 @@ OUTPUT_OPTIONS = (
     "Coaching Cards",
     "Pair Discussion Guides",
 )
+
+_repo = TeamDiagnosticsRepository()
 
 
 def init_prompt_templates() -> None:
@@ -42,7 +38,7 @@ def init_prompt_templates() -> None:
 
 
 def normalize_team_name(team_name: str) -> str:
-    """Normalize a display team name into a folder-safe identifier."""
+    """Normalize a display team name into a stable identifier."""
     team_name = team_name.strip()
     team_name = re.sub(r"[\s,]+", "_", team_name)
     team_name = re.sub(r"[^A-Za-z0-9_]", "", team_name)
@@ -50,120 +46,120 @@ def normalize_team_name(team_name: str) -> str:
     return team_name
 
 
-def team_folder(team_name: str) -> Path:
-    return INPUT_DIR / normalize_team_name(team_name)
-
-
-def team_config_path(team_name: str) -> Path:
-    return team_folder(team_name) / TEAM_CONFIG_FILE
-
-
-def _default_team_config(team_name: str, display_name: str = "") -> dict:
-    folder_name = normalize_team_name(team_name)
-    return {
-        "name": folder_name,
-        "display_name": display_name.strip() or folder_name.replace("_", " "),
-        "company_info": "",
-        "team_info": "",
-        "member_profile_ids": [],
-    }
-
-
-def load_team_config(team_name: str) -> dict:
-    path = team_config_path(team_name)
-    if not path.exists():
-        config = _default_team_config(team_name)
-        save_team_config(team_name, config)
-        return config
-
-    data = json.loads(path.read_text(encoding="utf-8"))
-    defaults = _default_team_config(team_name)
-    defaults.update(data)
-    if not isinstance(defaults.get("member_profile_ids"), list):
-        defaults["member_profile_ids"] = []
-    return defaults
-
-
-def save_team_config(team_name: str, config: dict) -> Path:
-    folder = team_folder(team_name)
-    folder.mkdir(parents=True, exist_ok=True)
-    path = folder / TEAM_CONFIG_FILE
-    path.write_text(json.dumps(config, indent=2), encoding="utf-8")
-    return path
-
-
 def create_team(
+    account: Account,
     team_name: str,
     company_info: str = "",
     team_info: str = "",
 ) -> Tuple[str, bool]:
-    """Create a team. Returns (folder_name, existed)."""
+    """Create a team. Returns (name, existed)."""
     folder_name = normalize_team_name(team_name)
     if not folder_name:
         raise ValueError("Team name is required.")
     if not re.fullmatch(r"[A-Za-z0-9_]+", folder_name):
         raise ValueError("Team name may only contain letters, numbers, and spaces.")
 
-    folder = INPUT_DIR / folder_name
-    existed = folder.exists() and team_config_path(folder_name).exists()
-    folder.mkdir(parents=True, exist_ok=True)
+    existing = _repo.get_team_by_name(account.id, folder_name)
+    if existing is not None:
+        return folder_name, True
 
-    if not existed:
-        config = _default_team_config(folder_name, display_name=team_name)
-        config["company_info"] = company_info.strip()
-        config["team_info"] = team_info.strip()
-        save_team_config(folder_name, config)
+    _repo.create_team(
+        account.id,
+        name=folder_name,
+        display_name=team_name.strip() or folder_name.replace("_", " "),
+        company_info=company_info.strip(),
+        team_info=team_info.strip(),
+    )
+    return folder_name, False
 
-    return folder_name, existed
+
+def load_team(account: Account, team_name: str) -> Team:
+    team = _repo.get_team_by_name(account.id, team_name)
+    if team is None:
+        raise FileNotFoundError(team_name)
+    return team
+
+
+def load_team_config(account: Account, team_name: str) -> dict:
+    """Return a config-shaped dict for UI compatibility."""
+    team = load_team(account, team_name)
+    return {
+        "id": team.id,
+        "name": team.name,
+        "display_name": team.display_name,
+        "company_info": team.company_info,
+        "team_info": team.team_info,
+        "member_profile_ids": list(team.member_profile_ids or []),
+    }
 
 
 def update_team_context(
+    account: Account,
     team_name: str,
     company_info: str,
     team_info: str,
     display_name: str = "",
 ) -> dict:
-    config = load_team_config(team_name)
-    if display_name.strip():
-        config["display_name"] = display_name.strip()
-    config["company_info"] = company_info.strip()
-    config["team_info"] = team_info.strip()
-    save_team_config(team_name, config)
-    return config
+    team = _repo.update_team_context(
+        account.id,
+        team_name,
+        display_name=display_name,
+        company_info=company_info.strip(),
+        team_info=team_info.strip(),
+    )
+    return {
+        "id": team.id,
+        "name": team.name,
+        "display_name": team.display_name,
+        "company_info": team.company_info,
+        "team_info": team.team_info,
+        "member_profile_ids": list(team.member_profile_ids or []),
+    }
 
 
-def list_teams() -> List[str]:
-    """List available team folders under data/TeamDiagnostics/Inputs."""
-    if not INPUT_DIR.exists():
-        return []
-    return sorted(p.name for p in INPUT_DIR.iterdir() if p.is_dir())
+def list_teams(account: Account) -> List[str]:
+    """List team name identifiers for the logged-in account."""
+    return [team.name for team in _repo.list_teams(account.id)]
 
 
-def list_member_profile_ids(team_name: str) -> List[str]:
-    return list(load_team_config(team_name).get("member_profile_ids", []))
+def list_team_records(account: Account) -> List[Team]:
+    return _repo.list_teams(account.id)
 
 
-def add_member_profile(team_name: str, profile_id: str) -> dict:
-    config = load_team_config(team_name)
-    members = list(config.get("member_profile_ids", []))
-    if profile_id in members:
-        raise ValueError("That profile is already on this team.")
-    members.append(profile_id)
-    config["member_profile_ids"] = members
-    save_team_config(team_name, config)
-    return config
+def list_member_profile_ids(account: Account, team_name: str) -> List[str]:
+    return _repo.list_member_profile_ids(account.id, team_name)
 
 
-def remove_member_profile(team_name: str, profile_id: str) -> dict:
-    config = load_team_config(team_name)
-    members = [
-        member_id
-        for member_id in config.get("member_profile_ids", [])
-        if member_id != profile_id
-    ]
-    config["member_profile_ids"] = members
-    save_team_config(team_name, config)
-    return config
+def add_member_profile(
+    account: Account,
+    team_name: str,
+    profile: Profile,
+) -> dict:
+    team = _repo.add_member(account.id, team_name, profile.id)
+    return {
+        "id": team.id,
+        "name": team.name,
+        "display_name": team.display_name,
+        "company_info": team.company_info,
+        "team_info": team.team_info,
+        "member_profile_ids": list(team.member_profile_ids or []),
+    }
+
+
+def remove_member_profile(
+    account: Account,
+    team_name: str,
+    profile_id: str,
+) -> dict:
+    team = _repo.remove_member(account.id, team_name, profile_id)
+    return {
+        "id": team.id,
+        "name": team.name,
+        "display_name": team.display_name,
+        "company_info": team.company_info,
+        "team_info": team.team_info,
+        "member_profile_ids": list(team.member_profile_ids or []),
+    }
 
 
 def member_status(
@@ -183,11 +179,12 @@ def member_status(
 
 
 def team_member_statuses(
+    account: Account,
     team_name: str,
     repo: ProfileRepository,
 ) -> List[Dict[str, object]]:
     statuses: List[Dict[str, object]] = []
-    for profile_id in list_member_profile_ids(team_name):
+    for profile_id in list_member_profile_ids(account, team_name):
         try:
             profile = repo.get_profile(profile_id)
         except FileNotFoundError:
@@ -208,11 +205,12 @@ def team_member_statuses(
 
 
 def validate_team(
+    account: Account,
     team_name: str,
     repo: ProfileRepository,
 ) -> Tuple[bool, List[Dict[str, object]], List[str]]:
     """Require at least two ready members (personality + job functions)."""
-    statuses = team_member_statuses(team_name, repo)
+    statuses = team_member_statuses(account, team_name, repo)
     issues: List[str] = []
 
     if len(statuses) < 2:
@@ -272,13 +270,14 @@ def build_system_message(template_name: str) -> str:
 
 
 def build_user_prompt(
+    account: Account,
     team_name: str,
     audience: str,
     outputs: List[str],
     repo: ProfileRepository,
 ) -> str:
     """Combine team context, profile inputs, and run configuration."""
-    config = load_team_config(team_name)
+    config = load_team_config(account, team_name)
     display_name = config.get("display_name") or team_name
     company_info = (config.get("company_info") or "").strip()
     team_info = (config.get("team_info") or "").strip()
@@ -286,7 +285,7 @@ def build_user_prompt(
     member_blocks: List[str] = []
     member_names: List[str] = []
 
-    for profile_id in list_member_profile_ids(team_name):
+    for profile_id in list_member_profile_ids(account, team_name):
         profile = repo.get_profile(profile_id)
         member_names.append(profile.display_name)
         personality = repo.load_document(profile, DocumentType.PERSONALITY)
@@ -303,7 +302,11 @@ def build_user_prompt(
         context_sections.append(f"## Company / organization\n\n{company_info}")
     if team_info:
         context_sections.append(f"## Team context\n\n{team_info}")
-    context_block = "\n\n".join(context_sections) if context_sections else "_No additional company or team context provided._"
+    context_block = (
+        "\n\n".join(context_sections)
+        if context_sections
+        else "_No additional company or team context provided._"
+    )
 
     return f"""
 Generate a Team Diagnostics packet for team **{display_name}**.
@@ -328,37 +331,94 @@ Only generate the outputs listed above. Use the exact headings from the output f
 """.strip()
 
 
-def output_path(team_name: str, template_name: str = "") -> Path:
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    suffix = f"_{template_name}" if template_name else ""
-    return OUTPUT_DIR / f"TeamDiagnostics_{normalize_team_name(team_name)}{suffix}.md"
+def save_team_diagnostics(
+    account: Account,
+    team_name: str,
+    content: str,
+    template_name: str = "",
+    *,
+    title: str | None = None,
+    audience: str = "Facilitator",
+    requested_outputs: List[str] | None = None,
+    used_humane_connection: bool = False,
+) -> TeamDiagnosticReport:
+    """Create a new saved report (does not overwrite history)."""
+    prompt_template_name = template_name or "default"
+    resolved_title = (
+        title.strip()
+        if title and title.strip()
+        else f"TeamDiagnostics_{normalize_team_name(team_name)}_{prompt_template_name}"
+    )
+    return _repo.create_report_always(
+        account.id,
+        team_name,
+        content=content,
+        prompt_template_name=prompt_template_name,
+        title=resolved_title,
+        audience=audience,
+        requested_outputs=requested_outputs,
+        used_humane_connection=used_humane_connection,
+    )
 
 
-def save_team_diagnostics(team_name: str, content: str, template_name: str = "") -> Path:
-    path = output_path(team_name, template_name=template_name)
-    path.write_text(content, encoding="utf-8")
-    return path
+def update_team_diagnostics(
+    account: Account,
+    report_id: str,
+    *,
+    content: str | None = None,
+    title: str | None = None,
+) -> TeamDiagnosticReport:
+    return _repo.update_report(
+        account.id,
+        report_id,
+        content=content,
+        title=title,
+    )
 
 
-def list_saved_outputs(team_name: str) -> List[Path]:
-    if not OUTPUT_DIR.exists():
-        return []
-    prefix = f"TeamDiagnostics_{normalize_team_name(team_name)}"
-    matches = [
-        path
-        for path in OUTPUT_DIR.glob(f"{prefix}*.md")
-        if path.is_file()
-    ]
-    return sorted(matches, key=lambda path: path.stat().st_mtime, reverse=True)
+def get_saved_report(
+    account: Account,
+    report_id: str,
+) -> Optional[TeamDiagnosticReport]:
+    return _repo.get_report(account.id, report_id)
 
 
-def load_saved_output(team_name: str, template_name: str = "") -> Optional[str]:
-    if template_name:
-        exact = output_path(team_name, template_name=template_name)
-        if exact.exists():
-            return exact.read_text(encoding="utf-8")
+def delete_team_diagnostics(
+    account: Account,
+    report_id: str,
+) -> None:
+    _repo.delete_report(account.id, report_id)
 
-    saved = list_saved_outputs(team_name)
-    if not saved:
+
+def list_saved_outputs(
+    account: Account,
+    team_name: str,
+) -> List[TeamDiagnosticReport]:
+    return _repo.list_reports(account.id, team_name)
+
+
+def load_saved_output(
+    account: Account,
+    team_name: str,
+    template_name: str = "",
+) -> Optional[str]:
+    report = _repo.get_latest_report(
+        account.id,
+        team_name,
+        prompt_template_name=template_name or None,
+    )
+    if report is None:
         return None
-    return saved[0].read_text(encoding="utf-8")
+    return report.content
+
+
+def load_latest_report(
+    account: Account,
+    team_name: str,
+    template_name: str = "",
+) -> Optional[TeamDiagnosticReport]:
+    return _repo.get_latest_report(
+        account.id,
+        team_name,
+        prompt_template_name=template_name or None,
+    )

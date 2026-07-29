@@ -8,6 +8,7 @@ This folder contains the shared PostgreSQL schema foundation for AIDDI.
 database/
 └── migrations/
     └── 001_initial_schema.sql
+    └── 002_team_diagnostics.sql
     └── TEMPLATE_new_section.sql.example
 ```
 
@@ -42,6 +43,12 @@ When a teammate needs database support for a new app section:
 5. Keep foreign keys connected to the shared core tables when appropriate.
 6. Add repository methods under `repositories/` for application code to use.
 
+Team Diagnostics already has:
+
+```text
+repositories/team_diagnostics_repository.py
+```
+
 There is also a repository starter file at:
 
 ```text
@@ -58,6 +65,12 @@ repositories/database_repository_template.py.example
 - `knowledge_base_sources`: Metadata for uploaded knowledge-base files.
 - `knowledge_base_index_runs`: Knowledge-base rebuild history.
 - `knowledge_base_index_errors`: File-level errors from a rebuild.
+
+## Team Diagnostics Tables
+
+- `teams`: Teams owned by an account, including company and team context.
+- `team_members`: Links teams to existing `profiles` (personality/job docs stay on the profile).
+- `team_diagnostic_reports`: Saved generated packets (mirrors `growth_plans`).
 
 ## Naming Conventions
 
