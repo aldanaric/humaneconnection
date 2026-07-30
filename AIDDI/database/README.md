@@ -32,6 +32,28 @@ Verify the expected tables exist:
 uv run python scripts/db_schema_check.py
 ```
 
+## Hosted Neon Database
+
+For Streamlit Community Cloud, create a Neon Postgres project and copy the
+connection string. Add it in Streamlit Cloud under **Manage app > Settings >
+Secrets**:
+
+```toml
+DATABASE_URL = "postgresql://USER:PASSWORD@HOST.neon.tech/DBNAME?sslmode=require"
+```
+
+Then run migrations against Neon from your local machine by temporarily setting
+that same URL for the command:
+
+```bash
+DATABASE_URL="postgresql://USER:PASSWORD@HOST.neon.tech/DBNAME?sslmode=require" uv run python scripts/db_migrate.py
+DATABASE_URL="postgresql://USER:PASSWORD@HOST.neon.tech/DBNAME?sslmode=require" uv run python scripts/db_schema_check.py
+DATABASE_URL="postgresql://USER:PASSWORD@HOST.neon.tech/DBNAME?sslmode=require" uv run python scripts/create_admin.py
+```
+
+Do not commit the Neon URL to Git. Keep it in Streamlit Secrets or your local
+shell only.
+
 ## Adding a New Section
 
 When a teammate needs database support for a new app section:

@@ -1,0 +1,6 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Local Streamlit secrets. Put real deployed secrets in Streamlit Cloud settings.
+.streamlit/secrets.toml

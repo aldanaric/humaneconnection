@@ -15,12 +15,27 @@ class DatabaseConfig:
     url: str
 
 
+def _get_config_value(key: str, default: str = "") -> str:
+    value = os.getenv(key)
+    if value is not None:
+        return value
+
+    try:
+        import streamlit as st
+
+        secret_value = st.secrets.get(key, default)
+    except Exception:
+        secret_value = default
+
+    return str(secret_value)
+
+
 def _build_url_from_parts() -> str:
-    name = os.getenv("POSTGRES_DB", "").strip()
-    user = os.getenv("POSTGRES_USER", "").strip()
-    password = os.getenv("POSTGRES_PASSWORD", "")
-    host = os.getenv("POSTGRES_HOST", "localhost").strip()
-    port = os.getenv("POSTGRES_PORT", "5432").strip()
+    name = _get_config_value("POSTGRES_DB").strip()
+    user = _get_config_value("POSTGRES_USER").strip()
+    password = _get_config_value("POSTGRES_PASSWORD")
+    host = _get_config_value("POSTGRES_HOST", "localhost").strip()
+    port = _get_config_value("POSTGRES_PORT", "5432").strip()
 
     missing = [
         key
@@ -45,7 +60,7 @@ def _build_url_from_parts() -> str:
 
 
 def get_database_config() -> DatabaseConfig:
-    database_url = os.getenv("DATABASE_URL", "").strip()
+    database_url = _get_config_value("DATABASE_URL").strip()
     if not database_url:
         database_url = _build_url_from_parts()
     return DatabaseConfig(url=database_url)
