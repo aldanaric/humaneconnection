@@ -3,8 +3,11 @@ from __future__ import annotations
 
 import streamlit as st
 
+from models.account import Account
 from models.document_type import DocumentType
 from repositories.profile_repository import ProfileRepository
+from ui.components.create_profile_dialog import open_create_profile_dialog
+from ui.components import profile_picker
 import services.team_diagnostics as team_diagnostics
 
 
@@ -77,7 +80,7 @@ def _edit_member_dialog(profile_id: str, repo: ProfileRepository) -> None:
             st.rerun()
 
 
-def render(repo: ProfileRepository) -> str | None:
+def render(account: Account, repo: ProfileRepository) -> str | None:
     """Render team/member controls. Returns the selected team name, if any."""
     with st.expander("➕ Add New Team"):
         with st.form("add_team"):
@@ -100,6 +103,7 @@ def render(repo: ProfileRepository) -> str | None:
     if create_team:
         try:
             folder_name, existed = team_diagnostics.create_team(
+                account,
                 team_name_input,
                 company_info=company_info_input,
                 team_info=team_info_input,
@@ -111,14 +115,37 @@ def render(repo: ProfileRepository) -> str | None:
                 st.rerun()
         except ValueError as exc:
             st.error(str(exc))
+        except Exception as exc:
+            st.error(f"Could not create team: {exc}")
 
-    teams = team_diagnostics.list_teams()
+    try:
+        teams = team_diagnostics.list_teams(account)
+    except Exception as exc:
+        st.error(
+            "Could not load teams from the database. "
+            "Start Postgres (`docker compose up -d postgres`) and run "
+            "`uv run python scripts/db_migrate.py`.\n\n"
+            f"Details: {exc}"
+        )
+        return None
+
     if not teams:
         st.warning("No teams found. Create a team above to get started.")
         return None
 
-    selected_team = st.selectbox("Select team", teams)
-    config = team_diagnostics.load_team_config(selected_team)
+    team_records = {
+        team.name: team for team in team_diagnostics.list_team_records(account)
+    }
+    selected_team = st.selectbox(
+        "Select team",
+        teams,
+        format_func=lambda name: (
+            team_records[name].display_name
+            if name in team_records and team_records[name].display_name
+            else name
+        ),
+    )
+    config = team_diagnostics.load_team_config(account, selected_team)
 
     st.subheader("Company & team context")
     display_name = st.text_input(
@@ -142,6 +169,7 @@ def render(repo: ProfileRepository) -> str | None:
     )
     if st.button("Save team context", key=f"save_team_context_{selected_team}"):
         team_diagnostics.update_team_context(
+            account,
             selected_team,
             company_info=company_info,
             team_info=team_info,
@@ -157,7 +185,11 @@ def render(repo: ProfileRepository) -> str | None:
         "Use Edit to update a person's inputs here."
     )
 
-    member_statuses = team_diagnostics.team_member_statuses(selected_team, repo)
+    member_statuses = team_diagnostics.team_member_statuses(
+        account,
+        selected_team,
+        repo,
+    )
     if not member_statuses:
         st.info("No members on this team yet. Add profiles below.")
     else:
@@ -196,41 +228,67 @@ def render(repo: ProfileRepository) -> str | None:
                         use_container_width=True,
                     ):
                         team_diagnostics.remove_member_profile(
+                            account,
                             selected_team,
                             profile_id,
                         )
                         st.rerun()
 
     profiles = repo.list_profiles()
-    member_ids = set(team_diagnostics.list_member_profile_ids(selected_team))
+    member_ids = set(team_diagnostics.list_member_profile_ids(account, selected_team))
     available = [profile for profile in profiles if profile.id not in member_ids]
 
     with st.expander("➕ Add member from Profiles"):
+        if st.button(
+            "Create new profile",
+            key=f"create_profile_btn_{selected_team}",
+        ):
+            open_create_profile_dialog(repo)
+
         if not available:
             st.info(
-                "No available profiles to add. Create profiles on the Profiles "
-                "or Growth Plan page first."
+                "No available profiles to add. Create a new profile above, "
+                "or add one from the Profiles / Growth Plan pages."
             )
         else:
-            selected_profile = st.selectbox(
-                "Profile",
-                available,
-                format_func=lambda profile: (
-                    f"{profile.display_name} ({profile.company_name})"
-                    if profile.company_name
-                    else profile.display_name
-                ),
-                key=f"add_profile_select_{selected_team}",
+            companies = profile_picker.list_companies(available)
+            selected_company = st.selectbox(
+                "Company",
+                [profile_picker.SELECT_COMPANY, *companies],
+                key=f"add_member_company_{selected_team}",
             )
-            if st.button("Add to team", key=f"add_profile_btn_{selected_team}"):
-                try:
-                    team_diagnostics.add_member_profile(
-                        selected_team,
-                        selected_profile.id,
+
+            if selected_company == profile_picker.SELECT_COMPANY:
+                st.caption("Choose a company to see available employees.")
+            else:
+                company_profiles = profile_picker.profiles_for_company(
+                    available,
+                    selected_company,
+                )
+                if not company_profiles:
+                    st.info("No available profiles left for that company.")
+                else:
+                    selected_profile = st.selectbox(
+                        "Employee",
+                        company_profiles,
+                        format_func=lambda profile: profile.display_name,
+                        key=f"add_profile_select_{selected_team}_{selected_company}",
                     )
-                    st.success(f"Added {selected_profile.display_name}.")
-                    st.rerun()
-                except ValueError as exc:
-                    st.error(str(exc))
+                    if st.button(
+                        "Add to team",
+                        key=f"add_profile_btn_{selected_team}",
+                    ):
+                        try:
+                            team_diagnostics.add_member_profile(
+                                account,
+                                selected_team,
+                                selected_profile,
+                            )
+                            st.success(f"Added {selected_profile.display_name}.")
+                            st.rerun()
+                        except ValueError as exc:
+                            st.error(str(exc))
+                        except Exception as exc:
+                            st.error(f"Could not add member: {exc}")
 
     return selected_team

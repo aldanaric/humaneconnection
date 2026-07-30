@@ -5,12 +5,20 @@ from repositories.profile_repository import ProfileRepository
 from repositories.account_repository import AccountRepository
 
 from models.access_level import AccessLevel
+from ui.components.create_profile_dialog import open_create_profile_dialog
 
 st.header("Profiles")
 
 account = st.session_state.get("account")
+if account is None:
+    st.warning("Log in to view profiles.")
+    st.stop()
 
 account_repo = AccountRepository()
+own_repo = ProfileRepository(account.id)
+
+if st.button("Create profile", type="primary"):
+    open_create_profile_dialog(own_repo)
 
 if account.access_level == AccessLevel.ADMIN:
     rows = []
@@ -26,21 +34,19 @@ if account.access_level == AccessLevel.ADMIN:
                 "Owner": acct.account_name
             })
 else:
-    repo = ProfileRepository(account.id)
-
     rows = [
         {
             "Name": p.first_name + " " + p.last_name,
             "Company": p.company_name,
             "profile": p,
-            "repo": repo,
+            "repo": own_repo,
             "Owner": account.account_name
         }
-        for p in repo.list_profiles()
+        for p in own_repo.list_profiles()
     ]
 
 if not rows:
-    st.info("No profiles found.")
+    st.info("No profiles found. Create one to get started.")
     st.stop()
 
 df = pd.DataFrame(rows)
@@ -120,36 +126,3 @@ if event.selection.rows:
                 st.session_state.preview,
                 unsafe_allow_html=False
             )
-#
-# selected=st.selectbox(
-#     "Select Person",
-#     options,
-#     format_func=lambda x: x.display_name if hasattr(x, "display_name") else x
-# )
-#
-# if selected == "+ Add new profile":
-#     st.subheader("Create new Profile:")
-#
-# elif selected == "--Select a profile--":
-#     st.stop()
-#
-# else:
-#     selected_profile = selected
-#
-# if not selected_profile:
-#     st.stop()
-#
-# st.header("Contents")
-#
-# files = selected_profile["repo"].list_documents(
-#     selected_profile["profile"]
-# )
-# plans = selected_profile["repo"].list_documents(
-#     selected_profile["profile"]
-# )
-#
-
-
-
-
-

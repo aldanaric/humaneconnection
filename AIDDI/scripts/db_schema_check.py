@@ -17,6 +17,9 @@ REQUIRED_TABLES = {
     "knowledge_base_sources",
     "knowledge_base_index_runs",
     "knowledge_base_index_errors",
+    "teams",
+    "team_members",
+    "team_diagnostic_reports",
     "schema_migrations",
 }
 

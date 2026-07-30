@@ -12,6 +12,7 @@ from models.document_type import DocumentType
 from ui.components import growth_plan_inputs
 from ui.components import generate_growth_plan
 from ui.components import growth_plan_output
+from ui.components import profile_picker
 
 from models.account import Account
 from repositories.account_repository import AccountRepository
@@ -34,21 +35,50 @@ repo = ProfileRepository(account.id)
 
 NO_GENERATED_PLAN = "No plan has been generated this session"
 
-st.markdown("Select a profile to generate a growth plan for:")
+st.markdown("Select a company, then a profile to generate a growth plan for:")
 
 selected_profile = ""
 profiles = repo.list_profiles()
+companies = profile_picker.list_companies(profiles)
 
-options = [
-    "--Select a profile--",
-    *profiles,
-    "+ Add new profile"
-    ]
+company_options = [profile_picker.SELECT_COMPANY, *companies]
+selected_company = st.selectbox(
+    "Company",
+    company_options,
+    key="growth_plan_company",
+)
 
-selected=st.selectbox(
+if selected_company == profile_picker.SELECT_COMPANY:
+    st.info("Choose a company to see its profiles.")
+    # Still allow creating a profile without filtering.
+    if st.button("Create new profile", key="growth_plan_create_without_company"):
+        st.session_state["growth_plan_show_create"] = True
+
+    if st.session_state.get("growth_plan_show_create"):
+        st.subheader("Create new Profile:")
+        first_name = st.text_input("First Name", key="gp_create_first")
+        last_name = st.text_input("Last Name", key="gp_create_last")
+        company = st.text_input("Employer", key="gp_create_company")
+        if st.button("Create profile", key="gp_create_submit"):
+            profile = repo.create_profile(first_name, last_name, company)
+            st.session_state.pop("growth_plan_show_create", None)
+            st.success(f"Created profile for {profile.display_name}")
+            st.rerun()
+    st.stop()
+
+filtered_profiles = profile_picker.profiles_for_company(profiles, selected_company)
+
+person_options = [
+    profile_picker.SELECT_PROFILE,
+    *filtered_profiles,
+    "+ Add new profile",
+]
+
+selected = st.selectbox(
     "Select Person",
-    options,
-    format_func=lambda x: x.display_name if hasattr(x, "display_name") else x
+    person_options,
+    format_func=lambda x: x.display_name if hasattr(x, "display_name") else x,
+    key=f"growth_plan_person_{selected_company}",
 )
 
 if selected == "+ Add new profile":
@@ -56,14 +86,17 @@ if selected == "+ Add new profile":
 
     first_name = st.text_input("First Name")
     last_name = st.text_input("Last Name")
-    company = st.text_input("Employer")
+    company = st.text_input("Employer", value=(
+        "" if selected_company == profile_picker.UNASSIGNED_COMPANY else selected_company
+    ))
 
     if st.button("Create profile"):
         profile = repo.create_profile(first_name, last_name, company)
         st.success(f"Created profile for {profile.display_name}")
         st.rerun()
+    st.stop()
 
-elif selected == "--Select a profile--":
+elif selected == profile_picker.SELECT_PROFILE:
     st.stop()
 
 else:
