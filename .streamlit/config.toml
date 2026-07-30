@@ -1,0 +1,39 @@
+[theme]
+base = "dark"
+primaryColor = "#1263ED"
+backgroundColor = "#060D29"
+secondaryBackgroundColor = "#092D89"
+textColor = "#FFFFFF"
+font = "sans serif"
+
+[theme.dark]
+primaryColor = "#1263ED"
+backgroundColor = "#060D29"
+secondaryBackgroundColor = "#092D89"
+textColor = "#FFFFFF"
+font = "sans serif"
+
+[theme.light]
+primaryColor = "#0B46CB"
+backgroundColor = "#E8E7EC"
+secondaryBackgroundColor = "#ADB5C7"
+textColor = "#060D29"
+font = "sans serif"
+
+[theme.sidebar]
+backgroundColor = "#092D89"
+
+[theme.dark.sidebar]
+backgroundColor = "#092D89"
+
+[theme.light.sidebar]
+backgroundColor = "#24AAF3"
+
+[client]
+showErrorDetails = "none"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false
