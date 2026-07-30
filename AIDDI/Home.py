@@ -14,17 +14,19 @@ if "account" not in st.session_state:
 else:
     account = st.session_state.get("account")
 
-login_page = st.Page("pages/Log_in.py", title="Log in")
-logout_page = st.Page("pages/Log_out.py", title="Log out")
-chat_page = st.Page("pages/1_💬_Quick_Chat.py")
+PAGES_DIR = Path(__file__).resolve().parent / "pages"
 
-growth_plan_page = st.Page("pages/2_Growth_Plan.py")
-knowledge_base_page = st.Page("pages/3_Knowledge_Base.py")
-diagnostic_summary_page = st.Page("pages/diagnostic_summary.py", title="Diagnostic Summary")
-team_diagnostics_page = st.Page("pages/4_Team_Diagnostics.py", title="Team Diagnostics")
-saved_prompts_page = st.Page("pages/Prompt_Editor.py", title="Saved Prompts")
-profiles_page = st.Page("pages/Profiles.py")
-account_page = st.Page("pages/Account_Management.py")
+login_page = st.Page(str(PAGES_DIR / "Log_in.py"), title="Log in")
+logout_page = st.Page(str(PAGES_DIR / "Log_out.py"), title="Log out")
+chat_page = st.Page(str(PAGES_DIR / "1_💬_Quick_Chat.py"))
+
+growth_plan_page = st.Page(str(PAGES_DIR / "2_Growth_Plan.py"))
+knowledge_base_page = st.Page(str(PAGES_DIR / "3_Knowledge_Base.py"))
+diagnostic_summary_page = st.Page(str(PAGES_DIR / "diagnostic_summary.py"), title="Diagnostic Summary")
+team_diagnostics_page = st.Page(str(PAGES_DIR / "4_Team_Diagnostics.py"), title="Team Diagnostics")
+saved_prompts_page = st.Page(str(PAGES_DIR / "Prompt_Editor.py"), title="Saved Prompts")
+profiles_page = st.Page(str(PAGES_DIR / "Profiles.py"))
+account_page = st.Page(str(PAGES_DIR / "Account_Management.py"))
 
 if account is None:
     pg = st.navigation([login_page])
