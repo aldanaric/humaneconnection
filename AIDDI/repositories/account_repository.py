@@ -33,7 +33,7 @@ class AccountRepository:
                         VALUES (%s, %s, %s)
                         RETURNING id, account_name, password_hash, access_level
                         """,
-                        (account_name, password_hash, access_level)
+                        (account_name, password_hash, access_level.value)
                     )
                     row = cursor.fetchone()
                 conn.commit()
@@ -144,8 +144,15 @@ class AccountRepository:
                         account_name = %s,
                         password_hash = %s,
                         access_level = %s
-                    WHERE id = %s"""
+                    WHERE id = %s""",
+                    (
+                        account.account_name,
+                        account.password_hash,
+                        account.access_level.value,
+                        account.id,
+                    ),
                 )
+            conn.commit()
 
     def change_password(
         self,
@@ -215,6 +222,4 @@ class AccountRepository:
             password_hash=row[2],
             access_level=AccessLevel(row[3])
         )
-
-
 
